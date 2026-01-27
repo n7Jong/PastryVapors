@@ -1,16 +1,41 @@
 // Signup Page JavaScript
 import { auth, db, createUserWithEmailAndPassword, doc, setDoc, Timestamp } from './firebase-config.js';
 
+// Helper function to capitalize first letter
+function capitalizeFirstLetter(str) {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+// Auto-capitalize name fields on input
+document.getElementById('firstName')?.addEventListener('input', function(e) {
+    const cursorPos = e.target.selectionStart;
+    e.target.value = capitalizeFirstLetter(e.target.value);
+    e.target.setSelectionRange(cursorPos, cursorPos);
+});
+
+document.getElementById('middleName')?.addEventListener('input', function(e) {
+    const cursorPos = e.target.selectionStart;
+    e.target.value = capitalizeFirstLetter(e.target.value);
+    e.target.setSelectionRange(cursorPos, cursorPos);
+});
+
+document.getElementById('lastName')?.addEventListener('input', function(e) {
+    const cursorPos = e.target.selectionStart;
+    e.target.value = capitalizeFirstLetter(e.target.value);
+    e.target.setSelectionRange(cursorPos, cursorPos);
+});
+
 // Signup Form Handler
 const signupForm = document.getElementById('signupForm');
 if (signupForm) {
     signupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        // Get form values
-        const firstName = document.getElementById('firstName').value.trim();
-        const middleName = document.getElementById('middleName').value.trim();
-        const lastName = document.getElementById('lastName').value.trim();
+        // Get form values with capitalization
+        const firstName = capitalizeFirstLetter(document.getElementById('firstName').value.trim());
+        const middleName = capitalizeFirstLetter(document.getElementById('middleName').value.trim());
+        const lastName = capitalizeFirstLetter(document.getElementById('lastName').value.trim());
         const birthdate = document.getElementById('birthdate').value;
         const address = document.getElementById('address').value.trim();
         const contactNumber = document.getElementById('contactNumber').value.trim();
