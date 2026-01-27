@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pastry Vapors - Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+            min-height: 100vh;
+        }
+        .card {
+            background: rgba(30, 30, 30, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .stat-card {
+            background: linear-gradient(135deg, rgba(20, 20, 20, 0.9) 0%, rgba(30, 30, 30, 0.9) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+        }
+        .modal.active {
+            display: flex;
+        }
+    </style>
+</head>
+<body class="text-white">
+    <!-- Navigation Bar -->
+    <nav class="bg-black/50 backdrop-blur-md border-b border-gray-800 sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="bg-amber-500 rounded-lg p-2">
+                        <span class="text-black font-bold text-xl">PV</span>
+                    </div>
+                    <span class="text-white font-bold text-xl">PASTRY <span class="text-amber-500">VAPORS</span></span>
+                    <span class="bg-amber-500/20 text-amber-500 px-3 py-1 rounded-full text-sm font-semibold">ADMIN</span>
+                </div>
+                
+                <div class="flex items-center gap-6">
+                    <a href="#" class="text-gray-400 hover:text-white transition">
+                        <i class="fas fa-boxes mr-2"></i>Products
+                    </a>
+                    <a href="#" class="bg-amber-500 text-black px-4 py-2 rounded-lg font-semibold">
+                        <i class="fas fa-chart-line mr-2"></i>Dashboard
+                    </a>
+                    <button id="logoutBtn" class="text-gray-400 hover:text-white transition">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <!-- Total Submissions -->
+            <div class="stat-card rounded-xl p-6">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm mb-2">Total Submissions</p>
+                        <h3 class="text-4xl font-bold" id="totalSubmissions">24</h3>
+                    </div>
+                    <div class="bg-blue-500/20 p-3 rounded-lg">
+                        <i class="fas fa-file-lines text-blue-500 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Review -->
+            <div class="stat-card rounded-xl p-6">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm mb-2">Pending Review</p>
+                        <h3 class="text-4xl font-bold" id="pendingReview">5</h3>
+                    </div>
+                    <div class="bg-yellow-500/20 p-3 rounded-lg">
+                        <i class="fas fa-clock text-yellow-500 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Approved -->
+            <div class="stat-card rounded-xl p-6">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm mb-2">Approved</p>
+                        <h3 class="text-4xl font-bold" id="approvedCount">16</h3>
+                    </div>
+                    <div class="bg-green-500/20 p-3 rounded-lg">
+                        <i class="fas fa-circle-check text-green-500 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rejected -->
+            <div class="stat-card rounded-xl p-6">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm mb-2">Rejected</p>
+                        <h3 class="text-4xl font-bold" id="rejectedCount">3</h3>
+                    </div>
+                    <div class="bg-red-500/20 p-3 rounded-lg">
+                        <i class="fas fa-circle-xmark text-red-500 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="card rounded-2xl p-6 mb-8">
+            <div class="flex gap-3 flex-wrap">
+                <button class="filter-tab active bg-amber-500 text-black px-6 py-2 rounded-lg font-semibold" data-filter="all">
+                    All Posts
+                </button>
+                <button class="filter-tab bg-gray-800 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-semibold" data-filter="pending">
+                    Pending <span class="bg-yellow-500/20 text-yellow-500 px-2 py-1 rounded-full text-xs ml-2">5</span>
+                </button>
+                <button class="filter-tab bg-gray-800 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-semibold" data-filter="approved">
+                    Approved
+                </button>
+                <button class="filter-tab bg-gray-800 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-semibold" data-filter="rejected">
+                    Rejected
+                </button>
+            </div>
+        </div>
+
+        <!-- Posts Table -->
+        <div class="card rounded-2xl p-8">
+            <h2 class="text-2xl font-bold mb-6">Promoter Submissions</h2>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-gray-700">
+                            <th class="text-left text-gray-400 font-semibold py-4 px-4">Date</th>
+                            <th class="text-left text-gray-400 font-semibold py-4 px-4">Promoter</th>
+                            <th class="text-left text-gray-400 font-semibold py-4 px-4">Platform</th>
+                            <th class="text-left text-gray-400 font-semibold py-4 px-4">Post URL</th>
+                            <th class="text-left text-gray-400 font-semibold py-4 px-4">Status</th>
+                            <th class="text-left text-gray-400 font-semibold py-4 px-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="postsTableBody">
+                        <!-- Sample data - will be replaced by Firebase data -->
+                        <tr class="border-b border-gray-800 hover:bg-gray-800/50" data-status="pending">
+                            <td class="py-4 px-4">2026-01-27</td>
+                            <td class="py-4 px-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-black font-bold">
+                                        J
+                                    </div>
+                                    <span>John Doe</span>
+                                </div>
+                            </td>
+                            <td class="py-4 px-4">
+                                <span class="bg-blue-600/20 text-blue-400 px-3 py-1 rounded-full text-sm">
+                                    <i class="fab fa-facebook-f mr-1"></i>facebook
+                                </span>
+                            </td>
+                            <td class="py-4 px-4">
+                                <a href="#" class="text-blue-400 hover:underline">https://facebook.com/post/xyz123</a>
+                            </td>
+                            <td class="py-4 px-4">
+                                <span class="flex items-center gap-2 text-yellow-500">
+                                    <i class="fas fa-clock"></i>
+                                    Pending
+                                </span>
+                            </td>
+                            <td class="py-4 px-4">
+                                <div class="flex gap-2">
+                                    <button class="approve-btn bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+                                        <i class="fas fa-check mr-1"></i>Approve
+                                    </button>
+                                    <button class="reject-btn bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+                                        <i class="fas fa-times mr-1"></i>Reject
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="border-b border-gray-800 hover:bg-gray-800/50" data-status="approved">
+                            <td class="py-4 px-4">2026-01-26</td>
+                            <td class="py-4 px-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+                                        S
+                                    </div>
+                                    <span>Sarah Smith</span>
+                                </div>
+                            </td>
+                            <td class="py-4 px-4">
+                                <span class="bg-pink-600/20 text-pink-400 px-3 py-1 rounded-full text-sm">
+                                    <i class="fab fa-instagram mr-1"></i>instagram
+                                </span>
+                            </td>
+                            <td class="py-4 px-4">
+                                <a href="#" class="text-blue-400 hover:underline">https://instagram.com/p/abc456</a>
+                            </td>
+                            <td class="py-4 px-4">
+                                <span class="flex items-center gap-2 text-green-500">
+                                    <i class="fas fa-circle-check"></i>
+                                    Approved
+                                </span>
+                            </td>
+                            <td class="py-4 px-4">
+                                <span class="text-gray-500 text-sm">+200 points</span>
+                            </td>
+                        </tr>
+                        <tr class="border-b border-gray-800 hover:bg-gray-800/50" data-status="pending">
+                            <td class="py-4 px-4">2026-01-27</td>
+                            <td class="py-4 px-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
+                                        M
+                                    </div>
+                                    <span>Mike Johnson</span>
+                                </div>
+                            </td>
+                            <td class="py-4 px-4">
+                                <span class="bg-blue-600/20 text-blue-400 px-3 py-1 rounded-full text-sm">
+                                    <i class="fab fa-facebook-f mr-1"></i>facebook
+                                </span>
+                            </td>
+                            <td class="py-4 px-4">
+                                <a href="#" class="text-blue-400 hover:underline">https://facebook.com/post/def789</a>
+                            </td>
+                            <td class="py-4 px-4">
+                                <span class="flex items-center gap-2 text-yellow-500">
+                                    <i class="fas fa-clock"></i>
+                                    Pending
+                                </span>
+                            </td>
+                            <td class="py-4 px-4">
+                                <div class="flex gap-2">
+                                    <button class="approve-btn bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+                                        <i class="fas fa-check mr-1"></i>Approve
+                                    </button>
+                                    <button class="reject-btn bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+                                        <i class="fas fa-times mr-1"></i>Reject
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal items-center justify-center">
+        <div class="card rounded-2xl p-8 max-w-md w-full mx-4">
+            <h3 class="text-2xl font-bold mb-4" id="modalTitle">Confirm Action</h3>
+            <p class="text-gray-400 mb-6" id="modalMessage">Are you sure you want to perform this action?</p>
+            
+            <div class="flex gap-4">
+                <button id="cancelBtn" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold transition">
+                    Cancel
+                </button>
+                <button id="confirmBtn" class="flex-1 bg-amber-500 hover:bg-amber-600 text-black py-3 rounded-lg font-semibold transition">
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase and App Scripts -->
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="admin.js"></script>
+
+    <script>
+        // Filter tabs functionality
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active state from all tabs
+                document.querySelectorAll('.filter-tab').forEach(t => {
+                    t.classList.remove('active', 'bg-amber-500', 'text-black');
+                    t.classList.add('bg-gray-800', 'text-white');
+                });
+                
+                // Add active state to clicked tab
+                this.classList.add('active', 'bg-amber-500', 'text-black');
+                this.classList.remove('bg-gray-800', 'text-white');
+                
+                // Filter table rows
+                const filter = this.dataset.filter;
+                const rows = document.querySelectorAll('#postsTableBody tr');
+                
+                rows.forEach(row => {
+                    if (filter === 'all') {
+                        row.style.display = '';
+                    } else {
+                        const status = row.dataset.status;
+                        row.style.display = status === filter ? '' : 'none';
+                    }
+                });
+            });
+        });
+
+        // Modal functionality
+        const modal = document.getElementById('confirmModal');
+        const cancelBtn = document.getElementById('cancelBtn');
+        
+        cancelBtn.addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
+
+        // Close modal when clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Pastry Vapors</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            min-height: 100vh;
+        }
+        .glass-effect {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glow {
+            box-shadow: 0 0 20px rgba(217, 156, 30, 0.4);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-2xl">
+        <!-- Logo and Title -->
+        <div class="text-center mb-8">
+            <div class="inline-block bg-amber-500 rounded-xl p-4 mb-4">
+                <span class="text-black font-bold text-3xl">PV</span>
+            </div>
+            <h1 class="text-white text-4xl font-bold mb-2">
+                PASTRY<span class="bg-amber-500 px-2">VAPORS</span>
+            </h1>
+            <p class="text-gray-400">Create your promoter account</p>
+        </div>
+
+        <!-- Signup Form -->
+        <div class="glass-effect rounded-2xl p-8 mb-6">
+            <div class="flex items-center gap-2 mb-6">
+                <i class="fas fa-user-plus text-amber-500"></i>
+                <h2 class="text-white text-xl font-bold">Sign Up</h2>
+            </div>
+
+            <form id="signupForm" class="space-y-4">
+                <!-- Name Fields -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="text-white text-sm block mb-2">First Name <span class="text-red-500">*</span></label>
+                        <input 
+                            type="text" 
+                            id="firstName"
+                            placeholder="John" 
+                            class="w-full bg-black/30 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+                            required
+                        >
+                    </div>
+                    <div>
+                        <label class="text-white text-sm block mb-2">Middle Name</label>
+                        <input 
+                            type="text" 
+                            id="middleName"
+                            placeholder="Optional" 
+                            class="w-full bg-black/30 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+                        >
+                    </div>
+                    <div>
+                        <label class="text-white text-sm block mb-2">Last Name <span class="text-red-500">*</span></label>
+                        <input 
+                            type="text" 
+                            id="lastName"
+                            placeholder="Doe" 
+                            class="w-full bg-black/30 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <!-- Birthdate -->
+                <div>
+                    <label class="text-white text-sm block mb-2">Birthdate <span class="text-red-500">*</span></label>
+                    <input 
+                        type="date" 
+                        id="birthdate"
+                        class="w-full bg-black/30 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500"
+                        required
+                    >
+                </div>
+
+                <!-- Address -->
+                <div>
+                    <label class="text-white text-sm block mb-2">Address <span class="text-red-500">*</span></label>
+                    <textarea 
+                        id="address"
+                        placeholder="Street, City, Province" 
+                        rows="3"
+                        class="w-full bg-black/30 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 resize-none"
+                        required
+                    ></textarea>
+                </div>
+
+                <!-- Contact Number -->
+                <div>
+                    <label class="text-white text-sm block mb-2">Contact Number <span class="text-red-500">*</span></label>
+                    <input 
+                        type="tel" 
+                        id="contactNumber"
+                        placeholder="+63 912 345 6789" 
+                        class="w-full bg-black/30 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+                        required
+                    >
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label class="text-white text-sm block mb-2">Email Address <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        <input 
+                            type="email" 
+                            id="email"
+                            placeholder="you@example.com" 
+                            class="w-full bg-black/30 border border-gray-600 rounded-lg px-12 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+                            required
+                        >
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label class="text-white text-sm block mb-2">Password <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        <input 
+                            type="password" 
+                            id="password"
+                            placeholder="Minimum 6 characters" 
+                            class="w-full bg-black/30 border border-gray-600 rounded-lg px-12 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+                            required
+                            minlength="6"
+                        >
+                        <button type="button" id="togglePassword" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Confirm Password -->
+                <div>
+                    <label class="text-white text-sm block mb-2">Confirm Password <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        <input 
+                            type="password" 
+                            id="confirmPassword"
+                            placeholder="Re-enter password" 
+                            class="w-full bg-black/30 border border-gray-600 rounded-lg px-12 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+                            required
+                            minlength="6"
+                        >
+                    </div>
+                </div>
+
+                <!-- Terms and Conditions -->
+                <div class="flex items-start gap-3">
+                    <input 
+                        type="checkbox" 
+                        id="agreeTerms"
+                        class="mt-1"
+                        required
+                    >
+                    <label for="agreeTerms" class="text-gray-400 text-sm">
+                        I agree to the <a href="#" class="text-amber-500 hover:text-amber-400">Terms and Conditions</a> and <a href="#" class="text-amber-500 hover:text-amber-400">Privacy Policy</a>
+                    </label>
+                </div>
+
+                <!-- Submit Button -->
+                <button 
+                    type="submit" 
+                    class="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold py-3 rounded-lg transition glow"
+                >
+                    Create Account
+                </button>
+            </form>
+
+            <!-- Back to Login -->
+            <div class="mt-6 text-center">
+                <p class="text-gray-400 text-sm">
+                    Already have an account? <a href="index.html" class="text-amber-500 hover:text-amber-400 font-semibold">Sign In</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Security Notice -->
+        <p class="text-center text-gray-600 text-xs">
+            Protected by enterprise-grade security • Your data is encrypted
+        </p>
+    </div>
+
+    <!-- Firebase and App Scripts -->
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="signup.js"></script>
+    
+    <script>
+        // Toggle password visibility
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const icon = this.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+
+        // Set max date for birthdate (must be at least 18 years old)
+        const today = new Date();
+        const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+        document.getElementById('birthdate').max = maxDate.toISOString().split('T')[0];
+    </script>
+</body>
+</html>
