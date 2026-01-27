@@ -158,6 +158,11 @@ function updatePostsTable(posts) {
                     <a href="${post.postUrl}" target="_blank" class="text-blue-400 hover:underline truncate block max-w-xs">
                         ${post.postUrl}
                     </a>
+                    ${post.screenshots && post.screenshots.length > 0 ? `
+                        <button class="view-screenshots-btn text-amber-500 hover:text-amber-400 text-sm mt-1 flex items-center gap-1" data-post-id="${post.id}">
+                            <i class="fas fa-images"></i> View ${post.screenshots.length} screenshot${post.screenshots.length > 1 ? 's' : ''}
+                        </button>
+                    ` : ''}
                 </td>
                 <td class="py-4 px-4">
                     <span class="flex items-center gap-2 text-${statusInfo.color}">
@@ -204,7 +209,80 @@ function attachActionButtons() {
             showRejectionModal(postId);
         });
     });
+    
+    document.querySelectorAll('.view-screenshots-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const postId = e.currentTarget.dataset.postId;
+            showScreenshotModal(postId);
+        });
+    });
 }
+
+// Screenshot viewer
+let currentScreenshots = [];
+let currentScreenshotIndex = 0;
+
+function showScreenshotModal(postId) {
+    const post = allPosts.find(p => p.id === postId);
+    if (!post || !post.screenshots || post.screenshots.length === 0) return;
+    
+    currentScreenshots = post.screenshots;
+    currentScreenshotIndex = 0;
+    updateScreenshotDisplay();
+    
+    document.getElementById('screenshotModal').classList.remove('hidden');
+}
+
+function updateScreenshotDisplay() {
+    const img = document.getElementById('currentScreenshot');
+    const counter = document.getElementById('screenshotCounter');
+    const thumbnailStrip = document.getElementById('thumbnailStrip');
+    
+    img.src = currentScreenshots[currentScreenshotIndex];
+    counter.textContent = `${currentScreenshotIndex + 1} / ${currentScreenshots.length}`;
+    
+    // Update thumbnails
+    thumbnailStrip.innerHTML = currentScreenshots.map((url, index) => `
+        <img 
+            src="${url}" 
+            alt="Thumbnail ${index + 1}"
+            class="w-20 h-20 object-cover rounded cursor-pointer border-2 ${index === currentScreenshotIndex ? 'border-amber-500' : 'border-transparent'} hover:border-amber-500"
+            onclick="currentScreenshotIndex = ${index}; updateScreenshotDisplay();"
+        >
+    `).join('');
+}
+
+document.getElementById('closeScreenshotModal')?.addEventListener('click', () => {
+    document.getElementById('screenshotModal').classList.add('hidden');
+});
+
+document.getElementById('prevScreenshot')?.addEventListener('click', () => {
+    if (currentScreenshotIndex > 0) {
+        currentScreenshotIndex--;
+        updateScreenshotDisplay();
+    }
+});
+
+document.getElementById('nextScreenshot')?.addEventListener('click', () => {
+    if (currentScreenshotIndex < currentScreenshots.length - 1) {
+        currentScreenshotIndex++;
+        updateScreenshotDisplay();
+    }
+});
+
+// Keyboard navigation
+document.addEventListener('keydown', (e) => {
+    const modal = document.getElementById('screenshotModal');
+    if (!modal.classList.contains('hidden')) {
+        if (e.key === 'ArrowLeft') {
+            document.getElementById('prevScreenshot').click();
+        } else if (e.key === 'ArrowRight') {
+            document.getElementById('nextScreenshot').click();
+        } else if (e.key === 'Escape') {
+            modal.classList.add('hidden');
+        }
+    }
+});
 
 let currentPostId = null;
 let selectedPoints = 75; // Default points

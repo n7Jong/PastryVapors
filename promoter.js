@@ -4,6 +4,12 @@ import { auth, db, signOut, onAuthStateChanged, collection, addDoc, getDocs, get
 let currentUser = null;
 let currentUserData = null;
 const isDemoMode = localStorage.getItem('demoMode') === 'true';
+let uploadedScreenshots = [];
+const MAX_SCREENSHOTS = 10;
+
+// Cloudinary configuration
+const CLOUDINARY_CLOUD_NAME = 'dy9tkp58u';
+const CLOUDINARY_UPLOAD_PRESET = 'pastryvapors_preset';
 
 // Check authentication
 onAuthStateChanged(auth, async (user) => {
@@ -19,6 +25,95 @@ onAuthStateChanged(auth, async (user) => {
         loadDemoData();
     }
 });
+
+// Screenshot upload handlers
+const screenshotDropZone = document.getElementById('screenshotDropZone');
+const screenshotInput = document.getElementById('screenshotInput');
+const screenshotPreview = document.getElementById('screenshotPreview');
+const screenshotCount = document.getElementById('screenshotCount');
+
+screenshotDropZone?.addEventListener('click', () => {
+    screenshotInput.click();
+});
+
+screenshotInput?.addEventListener('change', handleScreenshotUpload);
+
+screenshotDropZone?.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    screenshotDropZone.classList.add('border-amber-500');
+});
+
+screenshotDropZone?.addEventListener('dragleave', () => {
+    screenshotDropZone.classList.remove('border-amber-500');
+});
+
+screenshotDropZone?.addEventListener('drop', (e) => {
+    e.preventDefault();
+    screenshotDropZone.classList.remove('border-amber-500');
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+    handleScreenshotFiles(files);
+});
+
+async function handleScreenshotUpload(e) {
+    const files = Array.from(e.target.files);
+    await handleScreenshotFiles(files);
+}
+
+async function handleScreenshotFiles(files) {
+    const remainingSlots = MAX_SCREENSHOTS - uploadedScreenshots.length;
+    const filesToUpload = files.slice(0, remainingSlots);
+    
+    if (files.length > remainingSlots) {
+        alert(`You can only upload ${remainingSlots} more screenshot(s). Maximum is ${MAX_SCREENSHOTS}.`);
+    }
+    
+    for (const file of filesToUpload) {
+        if (uploadedScreenshots.length >= MAX_SCREENSHOTS) break;
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+        
+        try {
+            const response = await fetch(
+                `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+                {
+                    method: 'POST',
+                    body: formData
+                }
+            );
+            
+            const data = await response.json();
+            uploadedScreenshots.push(data.secure_url);
+            updateScreenshotPreview();
+        } catch (error) {
+            console.error('Error uploading screenshot:', error);
+            alert('Failed to upload screenshot');
+        }
+    }
+}
+
+function updateScreenshotPreview() {
+    screenshotPreview.innerHTML = uploadedScreenshots.map((url, index) => `
+        <div class="relative group">
+            <img src="${url}" alt="Screenshot ${index + 1}" class="w-full h-20 object-cover rounded-lg">
+            <button 
+                type="button"
+                onclick="removeScreenshot(${index})"
+                class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+            >
+                <i class="fas fa-times text-xs"></i>
+            </button>
+        </div>
+    `).join('');
+    
+    screenshotCount.textContent = `${uploadedScreenshots.length}/${MAX_SCREENSHOTS} screenshots`;
+}
+
+window.removeScreenshot = function(index) {
+    uploadedScreenshots.splice(index, 1);
+    updateScreenshotPreview();
+};
 
 // Check user suspension status
 async function checkUserStatus() {
@@ -148,6 +243,7 @@ if (submitPostForm) {
                     userName: userName,
                     platform: platform,
                     postUrl: postUrl,
+                    screenshots: uploadedScreenshots,
                     status: 'pending',
                     createdAt: Timestamp.now(),
                     points: 0
@@ -175,6 +271,8 @@ if (submitPostForm) {
             alert('Post submitted successfully! Admin will review it soon.');
             submitPostForm.reset();
             document.getElementById('selectedPlatform').value = 'facebook';
+            uploadedScreenshots = [];
+            updateScreenshotPreview();
             
             // Reload data
             if (isDemoMode) {
