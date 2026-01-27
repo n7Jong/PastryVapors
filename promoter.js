@@ -142,7 +142,7 @@ if (submitPostForm) {
                     userName = `${firstName} ${lastName}`.trim() || currentUser.email.split('@')[0];
                 }
                 
-                await addDoc(collection(db, 'posts'), {
+                const postData = {
                     userId: currentUser.uid,
                     userEmail: currentUser.email,
                     userName: userName,
@@ -151,7 +151,25 @@ if (submitPostForm) {
                     status: 'pending',
                     createdAt: Timestamp.now(),
                     points: 0
+                };
+                
+                console.log('📤 Submitting post:', postData);
+                const docRef = await addDoc(collection(db, 'posts'), postData);
+                console.log('✅ Post submitted with ID:', docRef.id);
+                
+                // Create notification for admin
+                await addDoc(collection(db, 'notifications'), {
+                    type: 'new_post',
+                    postId: docRef.id,
+                    userId: currentUser.uid,
+                    userName: userName,
+                    userEmail: currentUser.email,
+                    platform: platform,
+                    postUrl: postUrl,
+                    read: false,
+                    createdAt: Timestamp.now()
                 });
+                console.log('🔔 Notification created for admin');
             }
             
             alert('Post submitted successfully! Admin will review it soon.');

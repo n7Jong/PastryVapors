@@ -78,6 +78,18 @@ service cloud.firestore {
                         resource.data.status == 'pending');
     }
     
+    // Notifications Collection
+    match /notifications/{notificationId} {
+      // Only admins can read notifications
+      allow read: if isAdmin();
+      
+      // Authenticated users can create notifications (when they submit posts)
+      allow create: if isAuthenticated();
+      
+      // Only admins can update/delete notifications (mark as read, clear)
+      allow update, delete: if isAdmin();
+    }
+    
     // Analytics Collection (Optional - for tracking)
     match /analytics/{docId} {
       // Only admins can read analytics

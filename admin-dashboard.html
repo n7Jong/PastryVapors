@@ -532,16 +532,18 @@
         const modal = document.getElementById('confirmModal');
         const cancelBtn = document.getElementById('cancelBtn');
         
-        cancelBtn.addEventListener('click', () => {
-            modal.classList.remove('active');
-        });
-
-        // Close modal when clicking outside
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
+        if (cancelBtn && modal) {
+            cancelBtn.addEventListener('click', () => {
                 modal.classList.remove('active');
-            }
-        });
+            });
+
+            // Close modal when clicking outside
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        }
         
         // Mobile menu toggle
         function toggleMobileMenu() {

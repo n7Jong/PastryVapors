@@ -1,6 +1,6 @@
 import { auth, db } from './firebase-config.js';
-import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-import { collection, query, where, getDocs, doc, updateDoc, deleteDoc, getDoc, increment } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+import { collection, query, where, getDocs, doc, updateDoc, deleteDoc, getDoc, increment } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 let allPromoters = [];
 let currentPromoter = null;
@@ -22,14 +22,18 @@ onAuthStateChanged(auth, async (user) => {
 // Load All Promoters
 async function loadPromoters() {
     try {
+        console.log('👥 Loading promoters...');
         const usersRef = collection(db, 'users');
         const q = query(usersRef, where('isAdmin', '==', false));
         const querySnapshot = await getDocs(q);
+        
+        console.log('📝 Users with isAdmin=false found:', querySnapshot.size);
         
         allPromoters = [];
         
         for (const docSnap of querySnapshot.docs) {
             const userData = docSnap.data();
+            console.log('Promoter:', docSnap.id, userData.email, userData);
             
             // Count posts for this promoter
             const postsRef = collection(db, 'posts');
@@ -44,10 +48,13 @@ async function loadPromoters() {
             });
         }
         
+        console.log('✅ Total promoters loaded:', allPromoters.length);
+        
         displayPromoters();
         updateStats();
     } catch (error) {
-        console.error('Error loading promoters:', error);
+        console.error('❌ Error loading promoters:', error);
+        console.error('Error details:', error.message);
     }
 }
 

@@ -1,5 +1,5 @@
 // Admin Dashboard JavaScript
-import { auth, db, signOut, onAuthStateChanged, collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy, getDoc } from './firebase-config.js';
+import { auth, db, signOut, onAuthStateChanged, collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy, getDoc, onSnapshot, where } from './firebase-config.js';
 
 let currentUser = null;
 let allPosts = [];
@@ -37,6 +37,8 @@ onAuthStateChanged(auth, async (user) => {
     if (isDemoMode) {
         loadDemoData();
     } else {
+        console.log('🎯 Admin authenticated:', user.email);
+        setupNotificationListener();
         loadAdminData();
     }
 });
@@ -57,13 +59,19 @@ document.getElementById('logoutBtn')?.addEventListener('click', async () => {
 // Load all posts from Firebase
 async function loadAdminData() {
     try {
+        console.log('📊 Loading admin data...');
         const postsQuery = query(collection(db, 'posts'));
         const querySnapshot = await getDocs(postsQuery);
         
+        console.log('📝 Posts found:', querySnapshot.size);
+        
         allPosts = [];
         querySnapshot.forEach((doc) => {
+            console.log('Post:', doc.id, doc.data());
             allPosts.push({ id: doc.id, ...doc.data() });
         });
+        
+        console.log('✅ Total posts loaded:', allPosts.length);
         
         // Sort by createdAt in JavaScript (descending)
         allPosts.sort((a, b) => {
@@ -77,7 +85,8 @@ async function loadAdminData() {
         updateNotificationBadge(allPosts);
         
     } catch (error) {
-        console.error('Error loading admin data:', error);
+        console.error('❌ Error loading admin data:', error);
+        console.error('Error details:', error.message);
     }
 }
 
@@ -407,6 +416,42 @@ function updateNotificationBadge(posts) {
     }
 }
 
+// Real-time notification listener
+let notificationsUnsubscribe = null;
+let allNotifications = [];
+
+function setupNotificationListener() {
+    const notificationsQuery = query(
+        collection(db, 'notifications'),
+        where('read', '==', false),
+        orderBy('createdAt', 'desc')
+    );
+    
+    notificationsUnsubscribe = onSnapshot(notificationsQuery, (snapshot) => {
+        allNotifications = [];
+        snapshot.forEach((doc) => {
+            allNotifications.push({ id: doc.id, ...doc.data() });
+        });
+        
+        // Update badge
+        const badge = document.getElementById('notificationBadge');
+        if (allNotifications.length > 0) {
+            badge.textContent = allNotifications.length;
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+        
+        // Update panel if it's open
+        const panel = document.getElementById('notificationsPanel');
+        if (panel && !panel.classList.contains('hidden')) {
+            loadNotifications();
+        }
+        
+        console.log('🔔 Notifications updated:', allNotifications.length);
+    });
+}
+
 // Notification button handler
 document.getElementById('notificationBtn')?.addEventListener('click', () => {
     const panel = document.getElementById('notificationsPanel');
@@ -421,11 +466,10 @@ document.getElementById('closeNotificationsBtn')?.addEventListener('click', () =
 });
 
 // Load notifications
-function loadNotifications() {
-    const pendingPosts = allPosts.filter(p => p.status === 'pending');
+async function loadNotifications() {
     const notificationsList = document.getElementById('notificationsList');
     
-    if (pendingPosts.length === 0) {
+    if (allNotifications.length === 0) {
         notificationsList.innerHTML = `
             <div class="text-center text-gray-400 py-6">
                 <i class="fas fa-check-circle text-3xl mb-2"></i>
@@ -435,25 +479,50 @@ function loadNotifications() {
         return;
     }
     
-    notificationsList.innerHTML = pendingPosts.map(post => {
-        const date = post.createdAt?.toDate ? post.createdAt.toDate().toLocaleString() : post.createdAt;
-        const userName = post.userName || (post.userEmail?.split('@')[0]) || 'User';
+    notificationsList.innerHTML = allNotifications.map(notification => {
+        const date = notification.createdAt?.toDate ? notification.createdAt.toDate().toLocaleString() : 'Just now';
+        const userName = notification.userName || notification.userEmail?.split('@')[0] || 'User';
         
         return `
-            <div class="border-b border-gray-700 py-3 hover:bg-gray-800/30 rounded px-2">
+            <div class="border-b border-gray-700 py-3 hover:bg-gray-800/30 rounded px-2 cursor-pointer" onclick="markNotificationRead('${notification.id}')">
                 <div class="flex items-start gap-3">
                     <div class="bg-yellow-500/20 p-2 rounded">
                         <i class="fas fa-file-lines text-yellow-500"></i>
                     </div>
                     <div class="flex-1">
                         <p class="text-white font-semibold">${userName} submitted a post</p>
-                        <p class="text-gray-400 text-sm">${post.platform} • ${date}</p>
+                        <p class="text-gray-400 text-sm">${notification.platform} • ${date}</p>
                     </div>
+                    <button class="text-gray-400 hover:text-white" onclick="event.stopPropagation(); deleteNotification('${notification.id}')">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             </div>
         `;
     }).join('');
 }
+
+// Mark notification as read
+window.markNotificationRead = async function(notificationId) {
+    try {
+        await updateDoc(doc(db, 'notifications', notificationId), {
+            read: true
+        });
+        console.log('✅ Notification marked as read');
+    } catch (error) {
+        console.error('Error marking notification as read:', error);
+    }
+};
+
+// Delete notification
+window.deleteNotification = async function(notificationId) {
+    try {
+        await deleteDoc(doc(db, 'notifications', notificationId));
+        console.log('🗑️ Notification deleted');
+    } catch (error) {
+        console.error('Error deleting notification:', error);
+    }
+};
 
 // Manage Promoters button handler
 document.getElementById('managePromotersBtn')?.addEventListener('click', async () => {
