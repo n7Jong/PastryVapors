@@ -179,7 +179,7 @@
     <!-- Navigation Bar -->
     <nav class="bg-black/50 backdrop-blur-md border-b border-gray-800 sticky top-0 z-50">
         <div class="container mx-auto px-4 py-4">
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between relative">
                 <div class="flex items-center gap-3">
                     <a href="admin-dashboard.html" class="hover:opacity-80 transition">
                         <img src="logo/Pastry Vapors 2017 Logo.png" alt="Pastry Vapors Logo" class="h-12 w-auto">
@@ -191,12 +191,16 @@
                     </button>
                 </div>
                 
-                <div class="flex items-center gap-6">
+                <button class="mobile-menu-btn text-white text-2xl md:hidden" onclick="toggleMobileMenu()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <div class="nav-links flex items-center gap-6">
                     <a href="manage-promoters.html" class="text-gray-400 hover:text-white transition">
-                        <i class="fas fa-users mr-2"></i>Manage Promoters
+                        <i class="fas fa-users mr-2"></i><span class="hidden sm:inline">Manage Promoters</span>
                     </a>
                     <button id="logoutBtn" class="text-gray-400 hover:text-white transition">
-                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                        <i class="fas fa-sign-out-alt mr-2"></i><span class="hidden sm:inline">Logout</span>
                     </button>
                 </div>
             </div>
@@ -538,6 +542,12 @@
                 modal.classList.remove('active');
             }
         });
+        
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const navLinks = document.querySelector('.nav-links');
+            navLinks.classList.toggle('active');
+        }
     </script>
 </body>
 </html>

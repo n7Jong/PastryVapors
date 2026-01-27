@@ -125,6 +125,32 @@
             border-color: #f59e0b;
             box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
         }
+        
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            .nav-links.active {
+                display: flex;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: rgba(0, 0, 0, 0.95);
+                backdrop-filter: blur(10px);
+                padding: 1rem;
+                gap: 1rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            .mobile-menu-btn {
+                display: block;
+            }
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+        }
     </style>
 </head>
 <body class="relative">
@@ -136,7 +162,7 @@
     <!-- Navigation Bar -->
     <nav class="bg-gray-900 shadow-lg relative z-10">
         <div class="max-w-7xl mx-auto px-4 py-4">
-            <div class="flex justify-between items-center">
+            <div class="flex justify-between items-center relative">
                 <div class="flex items-center gap-6">
                     <a href="admin-dashboard.html" class="transition hover:opacity-80">
                         <img src="logo.png" alt="Pastry Vapors Logo" class="h-12">
@@ -145,12 +171,15 @@
                         <span class="bg-amber-500 text-black px-3 py-1 rounded-full text-sm font-bold">ADMIN</span>
                     </div>
                 </div>
-                <div class="flex items-center gap-6">
+                <button class="mobile-menu-btn text-white text-2xl md:hidden" onclick="toggleMobileMenu()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="nav-links flex items-center gap-6">
                     <a href="manage-promoters.html" class="bg-amber-500 text-black px-4 py-2 rounded-lg font-semibold">
-                        <i class="fas fa-users mr-2"></i>Manage Promoters
+                        <i class="fas fa-users mr-2"></i><span class="hidden sm:inline">Manage Promoters</span>
                     </a>
                     <button id="logoutBtn" class="text-gray-400 hover:text-white transition">
-                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                        <i class="fas fa-sign-out-alt mr-2"></i><span class="hidden sm:inline">Logout</span>
                     </button>
                 </div>
             </div>
@@ -333,5 +362,11 @@
     </div>
 
     <script type="module" src="manage-promoters.js"></script>
+    <script>
+        function toggleMobileMenu() {
+            const navLinks = document.querySelector('.nav-links');
+            navLinks.classList.toggle('active');
+        }
+    </script>
 </body>
 </html>

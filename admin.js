@@ -10,16 +10,27 @@ const isDemoMode = localStorage.getItem('demoMode') === 'true';
 // Check authentication and admin role
 onAuthStateChanged(auth, async (user) => {
     if (!user && !isDemoMode) {
+        localStorage.removeItem('userRole'); // Clear cached role
         window.location.href = 'index.html';
         return;
     }
     
-    // Check if user is admin
-    const userRole = localStorage.getItem('userRole');
-    if (userRole !== 'admin') {
-        alert('Access denied. Admin privileges required.');
-        window.location.href = 'index.html';
-        return;
+    if (!isDemoMode) {
+        // Check if user is admin from Firestore (not just localStorage)
+        try {
+            const userDoc = await getDoc(doc(db, 'users', user.uid));
+            if (!userDoc.exists() || userDoc.data().isAdmin !== true) {
+                alert('Access denied. Admin privileges required.');
+                localStorage.removeItem('userRole'); // Clear cached role
+                window.location.href = 'index.html';
+                return;
+            }
+        } catch (error) {
+            console.error('Error checking admin status:', error);
+            localStorage.removeItem('userRole'); // Clear cached role
+            window.location.href = 'index.html';
+            return;
+        }
     }
     
     currentUser = user;

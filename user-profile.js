@@ -209,6 +209,7 @@ document.getElementById('cancelBtn').addEventListener('click', () => {
 document.getElementById('logoutBtn').addEventListener('click', async () => {
     try {
         await signOut(auth);
+        localStorage.clear();
         window.location.href = 'index.html';
     } catch (error) {
         console.error('Error signing out:', error);
