@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Promoters - Pastry Vapors</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+        }
+
+        .smoke {
+            position: fixed;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(40px);
+            animation: float 8s infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+            50% { transform: translate(100px, -100px) scale(1.2); opacity: 0.6; }
+        }
+
+        .smoke:nth-child(2) {
+            left: 60%;
+            top: 60%;
+            animation-delay: 2s;
+            animation-duration: 10s;
+        }
+
+        .smoke:nth-child(3) {
+            left: 30%;
+            top: 40%;
+            animation-delay: 4s;
+            animation-duration: 12s;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background-color: #10b981;
+            color: white;
+        }
+
+        .status-suspended {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .warning-btn {
+            background-color: #f59e0b;
+            color: white;
+        }
+
+        .warning-btn:hover {
+            background-color: #d97706;
+        }
+
+        .suspend-btn {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .suspend-btn:hover {
+            background-color: #dc2626;
+        }
+
+        .kick-btn {
+            background-color: #7f1d1d;
+            color: white;
+        }
+
+        .kick-btn:hover {
+            background-color: #991b1b;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+    </style>
+</head>
+<body class="relative">
+    <!-- Smoke Effects -->
+    <div class="smoke" style="left: 10%; top: 20%;"></div>
+    <div class="smoke"></div>
+    <div class="smoke"></div>
+
+    <!-- Navigation Bar -->
+    <nav class="bg-gray-900 shadow-lg relative z-10">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-6">
+                    <a href="admin-dashboard.html" class="transition hover:opacity-80">
+                        <img src="logo.png" alt="Pastry Vapors Logo" class="h-12">
+                    </a>
+                    <div class="flex items-center gap-2">
+                        <span class="bg-amber-500 text-black px-3 py-1 rounded-full text-sm font-bold">ADMIN</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-6">
+                    <a href="manage-promoters.html" class="bg-amber-500 text-black px-4 py-2 rounded-lg font-semibold">
+                        <i class="fas fa-users mr-2"></i>Manage Promoters
+                    </a>
+                    <button id="logoutBtn" class="text-gray-400 hover:text-white transition">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 py-8 relative z-10">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-white mb-2">
+                <i class="fas fa-users-cog mr-3 text-amber-500"></i>Manage Promoters
+            </h1>
+            <p class="text-gray-400">Monitor and manage all promoter accounts</p>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="bg-gray-800 rounded-lg p-6 mb-6 shadow-lg">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="text-gray-400 text-sm mb-2 block">Search Promoter</label>
+                    <input type="text" id="searchInput" placeholder="Search by name or email..." 
+                           class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg search-input">
+                </div>
+                <div>
+                    <label class="text-gray-400 text-sm mb-2 block">Filter by Status</label>
+                    <select id="statusFilter" class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg">
+                        <option value="all">All Promoters</option>
+                        <option value="active">Active Only</option>
+                        <option value="suspended">Suspended Only</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-gray-400 text-sm mb-2 block">Sort by</label>
+                    <select id="sortBy" class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg">
+                        <option value="points-desc">Points (High to Low)</option>
+                        <option value="points-asc">Points (Low to High)</option>
+                        <option value="name-asc">Name (A-Z)</option>
+                        <option value="warnings-desc">Warnings (High to Low)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Promoters Table -->
+        <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-900">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-amber-500 font-semibold">Promoter</th>
+                            <th class="px-6 py-4 text-center text-amber-500 font-semibold">Points</th>
+                            <th class="px-6 py-4 text-center text-amber-500 font-semibold">Posts</th>
+                            <th class="px-6 py-4 text-center text-amber-500 font-semibold">Warnings</th>
+                            <th class="px-6 py-4 text-center text-amber-500 font-semibold">Status</th>
+                            <th class="px-6 py-4 text-center text-amber-500 font-semibold">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="promotersTableBody" class="divide-y divide-gray-700">
+                        <!-- Promoters will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="noResults" class="text-center py-12 text-gray-400 hidden">
+                <i class="fas fa-user-slash text-6xl mb-4 opacity-50"></i>
+                <p class="text-xl">No promoters found</p>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8">
+            <div class="bg-gray-800 rounded-lg p-6 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Total Promoters</p>
+                        <p id="totalPromoters" class="text-3xl font-bold text-white">0</p>
+                    </div>
+                    <i class="fas fa-users text-4xl text-blue-500"></i>
+                </div>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-6 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Active Promoters</p>
+                        <p id="activePromoters" class="text-3xl font-bold text-green-500">0</p>
+                    </div>
+                    <i class="fas fa-check-circle text-4xl text-green-500"></i>
+                </div>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-6 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Suspended</p>
+                        <p id="suspendedPromoters" class="text-3xl font-bold text-red-500">0</p>
+                    </div>
+                    <i class="fas fa-ban text-4xl text-red-500"></i>
+                </div>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-6 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Total Warnings</p>
+                        <p id="totalWarnings" class="text-3xl font-bold text-amber-500">0</p>
+                    </div>
+                    <i class="fas fa-exclamation-triangle text-4xl text-amber-500"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Warning Modal -->
+    <div id="warningModal" class="modal">
+        <div class="bg-gray-800 rounded-lg p-8 max-w-md w-full mx-4 shadow-2xl">
+            <h3 class="text-2xl font-bold text-white mb-4">
+                <i class="fas fa-exclamation-triangle text-amber-500 mr-2"></i>Send Warning
+            </h3>
+            <p class="text-gray-400 mb-4">Promoter: <span id="warningPromoterName" class="text-white font-semibold"></span></p>
+            <textarea id="warningMessage" rows="4" placeholder="Enter warning message..." 
+                      class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg mb-4 resize-none focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
+            <div class="flex gap-3">
+                <button id="sendWarningBtn" class="flex-1 bg-amber-500 text-black px-6 py-2 rounded-lg font-semibold hover:bg-amber-600 transition">
+                    Send Warning
+                </button>
+                <button id="cancelWarningBtn" class="flex-1 bg-gray-700 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-600 transition">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Suspend Modal -->
+    <div id="suspendModal" class="modal">
+        <div class="bg-gray-800 rounded-lg p-8 max-w-md w-full mx-4 shadow-2xl">
+            <h3 class="text-2xl font-bold text-white mb-4">
+                <i class="fas fa-ban text-red-500 mr-2"></i>Suspend Promoter
+            </h3>
+            <p class="text-gray-400 mb-4">Promoter: <span id="suspendPromoterName" class="text-white font-semibold"></span></p>
+            <label class="text-gray-400 text-sm mb-2 block">Suspension Duration</label>
+            <select id="suspendDuration" class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg mb-4">
+                <option value="1">1 Day</option>
+                <option value="3">3 Days</option>
+                <option value="7">7 Days</option>
+                <option value="14">14 Days</option>
+                <option value="30">30 Days</option>
+                <option value="365">1 Year</option>
+            </select>
+            <div class="flex gap-3">
+                <button id="confirmSuspendBtn" class="flex-1 bg-red-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-600 transition">
+                    Suspend
+                </button>
+                <button id="cancelSuspendBtn" class="flex-1 bg-gray-700 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-600 transition">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kick Modal -->
+    <div id="kickModal" class="modal">
+        <div class="bg-gray-800 rounded-lg p-8 max-w-md w-full mx-4 shadow-2xl">
+            <h3 class="text-2xl font-bold text-white mb-4">
+                <i class="fas fa-user-times text-red-700 mr-2"></i>Kick Promoter
+            </h3>
+            <p class="text-gray-400 mb-4">Promoter: <span id="kickPromoterName" class="text-white font-semibold"></span></p>
+            <div class="bg-red-900 bg-opacity-20 border border-red-500 rounded-lg p-4 mb-4">
+                <p class="text-red-400 text-sm">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <strong>Warning:</strong> This action will permanently delete the promoter's account and all their posts. This cannot be undone.
+                </p>
+            </div>
+            <div class="flex gap-3">
+                <button id="confirmKickBtn" class="flex-1 bg-red-700 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-800 transition">
+                    Confirm Kick
+                </button>
+                <button id="cancelKickBtn" class="flex-1 bg-gray-700 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-600 transition">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="manage-promoters.js"></script>
+</body>
+</html>

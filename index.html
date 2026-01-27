@@ -4,12 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pastry Vapors - Sign In</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        
         body {
             background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
             min-height: 100vh;
+            overflow: hidden;
+            position: relative;
         }
         .glass-effect {
             background: rgba(0, 0, 0, 0.3);
@@ -19,19 +28,154 @@
         .glow {
             box-shadow: 0 0 20px rgba(217, 156, 30, 0.4);
         }
+        
+        /* Smoke Effect */
+        .smoke-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        .smoke {
+            position: absolute;
+            bottom: -200px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.75) 0%, rgba(251, 191, 36, 0.65) 20%, rgba(234, 179, 8, 0.5) 40%, rgba(217, 119, 6, 0.3) 60%, transparent 80%);
+            border-radius: 50%;
+            filter: blur(50px);
+            animation: cigaretteSmoke 20s infinite ease-in-out;
+            opacity: 0;
+        }
+        
+        .smoke:nth-child(1) {
+            left: 15%;
+            animation-delay: 0s;
+            animation-duration: 18s;
+            width: 180px;
+            height: 180px;
+        }
+        
+        .smoke:nth-child(2) {
+            left: 35%;
+            animation-delay: 3s;
+            animation-duration: 22s;
+            width: 160px;
+            height: 160px;
+        }
+        
+        .smoke:nth-child(3) {
+            left: 50%;
+            animation-delay: 6s;
+            animation-duration: 20s;
+            width: 190px;
+            height: 190px;
+        }
+        
+        .smoke:nth-child(4) {
+            left: 65%;
+            animation-delay: 9s;
+            animation-duration: 19s;
+            width: 170px;
+            height: 170px;
+        }
+        
+        .smoke:nth-child(5) {
+            left: 80%;
+            animation-delay: 12s;
+            animation-duration: 21s;
+            width: 200px;
+            height: 200px;
+        }
+        
+        .smoke:nth-child(6) {
+            left: 25%;
+            animation-delay: 15s;
+            animation-duration: 23s;
+            width: 150px;
+            height: 150px;
+        }
+        
+        .smoke:nth-child(7) {
+            left: 70%;
+            animation-delay: 18s;
+            animation-duration: 17s;
+            width: 175px;
+            height: 175px;
+        }
+        
+        @keyframes cigaretteSmoke {
+            0% {
+                bottom: -200px;
+                opacity: 0;
+                transform: translateX(0) translateY(0) rotate(0deg) scale(0.5);
+            }
+            5% {
+                opacity: 0.75;
+            }
+            15% {
+                opacity: 0.75;
+                transform: translateX(30px) translateY(-100px) rotate(10deg) scale(1);
+            }
+            30% {
+                opacity: 0.7;
+                transform: translateX(-20px) translateY(-250px) rotate(-15deg) scale(1.3);
+            }
+            45% {
+                opacity: 0.65;
+                transform: translateX(40px) translateY(-400px) rotate(20deg) scale(1.6);
+            }
+            60% {
+                opacity: 0.5;
+                transform: translateX(-30px) translateY(-550px) rotate(-10deg) scale(1.9);
+            }
+            75% {
+                opacity: 0.35;
+                transform: translateX(25px) translateY(-700px) rotate(15deg) scale(2.2);
+            }
+            90% {
+                opacity: 0.2;
+                transform: translateX(-15px) translateY(-850px) rotate(-5deg) scale(2.5);
+            }
+            100% {
+                bottom: 100%;
+                opacity: 0;
+                transform: translateX(0) translateY(-1000px) rotate(0deg) scale(3);
+            }
+        }
+        
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
+        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
-    <div class="w-full max-w-md">
+    <!-- Smoke Effect Background -->
+    <div class="smoke-container">
+        <div class="smoke"></div>
+        <div class="smoke"></div>
+        <div class="smoke"></div>
+        <div class="smoke"></div>
+        <div class="smoke"></div>
+        <div class="smoke"></div>
+        <div class="smoke"></div>
+    </div>
+    
+    <div class="w-full max-w-md content-wrapper">
         <!-- Logo and Title -->
         <div class="text-center mb-8">
-            <div class="inline-block bg-amber-500 rounded-xl p-4 mb-4">
-                <span class="text-black font-bold text-3xl">PV</span>
+            <div class="mb-1">
+                <a href="index.html" class="inline-block hover:opacity-80 transition">
+                    <img src="logo/Pastry Vapors 2017 Logo.png" alt="Pastry Vapors Logo" class="mx-auto h-[250px] w-[250px] object-contain">
+                </a>
             </div>
-            <h1 class="text-white text-4xl font-bold mb-2">
-                PASTRY<span class="bg-amber-500 px-2">VAPORS</span>
-            </h1>
-            <p class="text-gray-400">Welcome back to the platform</p>
+            <p class="text-gray-400 text-lg">Welcome Promoters</p>
         </div>
 
         <!-- Login Form -->
@@ -49,7 +193,7 @@
                         <input 
                             type="email" 
                             id="emailInput"
-                            placeholder="you@example.com" 
+                            placeholder="promoter@example.com" 
                             class="w-full bg-black/30 border border-gray-600 rounded-lg px-12 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
                             required
                         >
@@ -96,9 +240,9 @@
             </div>
         </div>
 
-        <!-- Security Notice -->
+        <!-- Copyright Notice -->
         <p class="text-center text-gray-600 text-xs">
-            Protected by enterprise-grade security • Your data is encrypted
+            © Pastry Vapors 2026. All rights reserved.
         </p>
     </div>
 

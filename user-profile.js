@@ -1,4 +1,4 @@
-gitimport { auth, db } from './firebase-config.js';
+import { auth, db } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { doc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
@@ -7,8 +7,8 @@ let cloudinaryWidget = null;
 let uploadedImageUrl = null;
 
 // Cloudinary configuration
-const CLOUDINARY_CLOUD_NAME = 'pastry_vapors';
-const CLOUDINARY_UPLOAD_PRESET = 'ml_default'; // Use default unsigned preset for now
+const CLOUDINARY_CLOUD_NAME = 'dy9tkp58u';
+const CLOUDINARY_UPLOAD_PRESET = 'pastryvapors_preset'; // Use default unsigned preset for now
 
 // Initialize Cloudinary Upload Widget
 function initCloudinaryWidget() {

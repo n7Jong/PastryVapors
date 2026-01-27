@@ -1,22 +1,98 @@
 // Promoter Dashboard JavaScript
-import { auth, db, signOut, onAuthStateChanged, collection, addDoc, getDocs, query, where, orderBy, Timestamp } from './firebase-config.js';
+import { auth, db, signOut, onAuthStateChanged, collection, addDoc, getDocs, getDoc, query, where, orderBy, Timestamp, doc, updateDoc } from './firebase-config.js';
 
 let currentUser = null;
+let currentUserData = null;
 const isDemoMode = localStorage.getItem('demoMode') === 'true';
 
 // Check authentication
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
     if (!user && !isDemoMode) {
         window.location.href = 'index.html';
         return;
     }
     currentUser = user;
     if (!isDemoMode) {
+        await checkUserStatus();
         loadPromoterData();
     } else {
         loadDemoData();
     }
 });
+
+// Check user suspension status
+async function checkUserStatus() {
+    try {
+        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        if (userDoc.exists()) {
+            currentUserData = userDoc.data();
+            
+            // Check if user is suspended
+            if (currentUserData.suspended) {
+                const suspendedUntil = new Date(currentUserData.suspendedUntil);
+                const now = new Date();
+                
+                if (suspendedUntil > now) {
+                    // User is still suspended
+                    showSuspensionNotice(suspendedUntil);
+                    return true;
+                } else {
+                    // Suspension expired, remove it
+                    await updateDoc(doc(db, 'users', currentUser.uid), {
+                        suspended: false,
+                        suspendedUntil: null
+                    });
+                    currentUserData.suspended = false;
+                }
+            }
+            
+            // Show warnings if any
+            if (currentUserData.warnings && currentUserData.warnings > 0) {
+                showWarningNotice(currentUserData.warnings, currentUserData.lastWarning);
+            }
+        }
+        return false;
+    } catch (error) {
+        console.error('Error checking user status:', error);
+        return false;
+    }
+}
+
+// Show suspension notice
+function showSuspensionNotice(suspendedUntil) {
+    const submitForm = document.getElementById('submitPostForm');
+    if (submitForm) {
+        submitForm.innerHTML = `
+            <div class="bg-orange-500/20 border border-orange-500 rounded-lg p-6 text-center">
+                <i class="fas fa-ban text-orange-500 text-4xl mb-4"></i>
+                <h3 class="text-xl font-bold text-orange-500 mb-2">Account Suspended</h3>
+                <p class="text-gray-300 mb-2">You cannot submit posts until:</p>
+                <p class="text-white font-bold text-lg">${suspendedUntil.toLocaleDateString()} ${suspendedUntil.toLocaleTimeString()}</p>
+                <p class="text-gray-400 text-sm mt-4">Please contact an administrator for more information.</p>
+            </div>
+        `;
+    }
+}
+
+// Show warning notice
+function showWarningNotice(warningCount, lastWarning) {
+    const statsCards = document.querySelector('.grid');
+    if (statsCards && lastWarning) {
+        const warningBanner = document.createElement('div');
+        warningBanner.className = 'col-span-full bg-yellow-500/20 border border-yellow-500 rounded-lg p-4 mb-4';
+        warningBanner.innerHTML = `
+            <div class="flex items-start gap-3">
+                <i class="fas fa-exclamation-triangle text-yellow-500 text-2xl"></i>
+                <div class="flex-1">
+                    <h3 class="text-yellow-500 font-bold mb-1">Warning Notice (${warningCount} total)</h3>
+                    <p class="text-white">${lastWarning.message}</p>
+                    <p class="text-gray-400 text-sm mt-2">${new Date(lastWarning.timestamp).toLocaleString()}</p>
+                </div>
+            </div>
+        `;
+        statsCards.insertBefore(warningBanner, statsCards.firstChild);
+    }
+}
 
 // Logout handler
 document.getElementById('logoutBtn')?.addEventListener('click', async () => {
@@ -37,6 +113,12 @@ if (submitPostForm) {
     submitPostForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
+        // Check if user is suspended
+        if (currentUserData?.suspended) {
+            alert('You are currently suspended and cannot submit posts.');
+            return;
+        }
+        
         const platform = document.getElementById('selectedPlatform').value;
         const postUrl = document.getElementById('postUrlInput').value;
         
@@ -52,9 +134,18 @@ if (submitPostForm) {
                 saveDemoPost(platform, postUrl);
             } else {
                 // Firebase mode
+                // Get user's name for display
+                let userName = 'Unknown User';
+                if (currentUserData) {
+                    const firstName = currentUserData.firstName || '';
+                    const lastName = currentUserData.lastName || '';
+                    userName = `${firstName} ${lastName}`.trim() || currentUser.email.split('@')[0];
+                }
+                
                 await addDoc(collection(db, 'posts'), {
                     userId: currentUser.uid,
                     userEmail: currentUser.email,
+                    userName: userName,
                     platform: platform,
                     postUrl: postUrl,
                     status: 'pending',
@@ -63,7 +154,7 @@ if (submitPostForm) {
                 });
             }
             
-            alert('Post submitted successfully!');
+            alert('Post submitted successfully! Admin will review it soon.');
             submitPostForm.reset();
             document.getElementById('selectedPlatform').value = 'facebook';
             

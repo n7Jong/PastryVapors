@@ -4,12 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pastry Vapors - Admin Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        
         body {
             background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
             min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
         }
         .card {
             background: rgba(30, 30, 30, 0.8);
@@ -33,27 +42,158 @@
         .modal.active {
             display: flex;
         }
+        
+        /* Smoke Effect */
+        .smoke-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        .smoke {
+            position: absolute;
+            bottom: -200px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.75) 0%, rgba(251, 191, 36, 0.65) 20%, rgba(234, 179, 8, 0.5) 40%, rgba(217, 119, 6, 0.3) 60%, transparent 80%);
+            border-radius: 50%;
+            filter: blur(50px);
+            animation: cigaretteSmoke 20s infinite ease-in-out;
+            opacity: 0;
+        }
+        
+        .smoke:nth-child(1) {
+            left: 15%;
+            animation-delay: 0s;
+            animation-duration: 18s;
+            width: 180px;
+            height: 180px;
+        }
+        
+        .smoke:nth-child(2) {
+            left: 35%;
+            animation-delay: 3s;
+            animation-duration: 22s;
+            width: 160px;
+            height: 160px;
+        }
+        
+        .smoke:nth-child(3) {
+            left: 50%;
+            animation-delay: 6s;
+            animation-duration: 20s;
+            width: 190px;
+            height: 190px;
+        }
+        
+        .smoke:nth-child(4) {
+            left: 65%;
+            animation-delay: 9s;
+            animation-duration: 19s;
+            width: 170px;
+            height: 170px;
+        }
+        
+        .smoke:nth-child(5) {
+            left: 80%;
+            animation-delay: 12s;
+            animation-duration: 21s;
+            width: 200px;
+            height: 200px;
+        }
+        
+        .smoke:nth-child(6) {
+            left: 25%;
+            animation-delay: 15s;
+            animation-duration: 23s;
+            width: 150px;
+            height: 150px;
+        }
+        
+        .smoke:nth-child(7) {
+            left: 70%;
+            animation-delay: 18s;
+            animation-duration: 17s;
+            width: 175px;
+            height: 175px;
+        }
+        
+        @keyframes cigaretteSmoke {
+            0% {
+                bottom: -200px;
+                opacity: 0;
+                transform: translateX(0) translateY(0) rotate(0deg) scale(0.5);
+            }
+            5% {
+                opacity: 0.75;
+            }
+            15% {
+                opacity: 0.75;
+                transform: translateX(30px) translateY(-100px) rotate(10deg) scale(1);
+            }
+            30% {
+                opacity: 0.7;
+                transform: translateX(-20px) translateY(-250px) rotate(-15deg) scale(1.3);
+            }
+            45% {
+                opacity: 0.65;
+                transform: translateX(40px) translateY(-400px) rotate(20deg) scale(1.6);
+            }
+            60% {
+                opacity: 0.5;
+                transform: translateX(-30px) translateY(-550px) rotate(-10deg) scale(1.9);
+            }
+            75% {
+                opacity: 0.35;
+                transform: translateX(25px) translateY(-700px) rotate(15deg) scale(2.2);
+            }
+            90% {
+                opacity: 0.2;
+                transform: translateX(-15px) translateY(-850px) rotate(-5deg) scale(2.5);
+            }
+            100% {
+                bottom: 100%;
+                opacity: 0;
+                transform: translateX(0) translateY(-1000px) rotate(0deg) scale(3);
+            }
+        }
     </style>
 </head>
 <body class="text-white">
+    <!-- Smoke Effect Background -->
+    <div class="smoke-container">
+        <div class="smoke"></div>
+        <div class="smoke"></div>
+        <div class="smoke"></div>
+        <div class="smoke"></div>
+        <div class="smoke"></div>
+        <div class="smoke"></div>
+        <div class="smoke"></div>
+    </div>
+    
     <!-- Navigation Bar -->
     <nav class="bg-black/50 backdrop-blur-md border-b border-gray-800 sticky top-0 z-50">
         <div class="container mx-auto px-4 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <div class="bg-amber-500 rounded-lg p-2">
-                        <span class="text-black font-bold text-xl">PV</span>
-                    </div>
-                    <span class="text-white font-bold text-xl">PASTRY <span class="text-amber-500">VAPORS</span></span>
+                    <a href="admin-dashboard.html" class="hover:opacity-80 transition">
+                        <img src="logo/Pastry Vapors 2017 Logo.png" alt="Pastry Vapors Logo" class="h-12 w-auto">
+                    </a>
                     <span class="bg-amber-500/20 text-amber-500 px-3 py-1 rounded-full text-sm font-semibold">ADMIN</span>
+                    <button id="notificationBtn" class="relative text-gray-400 hover:text-white transition">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span id="notificationBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
+                    </button>
                 </div>
                 
                 <div class="flex items-center gap-6">
-                    <a href="#" class="text-gray-400 hover:text-white transition">
-                        <i class="fas fa-boxes mr-2"></i>Products
-                    </a>
-                    <a href="#" class="bg-amber-500 text-black px-4 py-2 rounded-lg font-semibold">
-                        <i class="fas fa-chart-line mr-2"></i>Dashboard
+                    <a href="manage-promoters.html" class="text-gray-400 hover:text-white transition">
+                        <i class="fas fa-users mr-2"></i>Manage Promoters
                     </a>
                     <button id="logoutBtn" class="text-gray-400 hover:text-white transition">
                         <i class="fas fa-sign-out-alt mr-2"></i>Logout
@@ -71,7 +211,7 @@
                 <div class="flex items-start justify-between">
                     <div>
                         <p class="text-gray-400 text-sm mb-2">Total Submissions</p>
-                        <h3 class="text-4xl font-bold" id="totalSubmissions">24</h3>
+                        <h3 class="text-4xl font-bold" id="totalSubmissions">0</h3>
                     </div>
                     <div class="bg-blue-500/20 p-3 rounded-lg">
                         <i class="fas fa-file-lines text-blue-500 text-2xl"></i>
@@ -84,7 +224,7 @@
                 <div class="flex items-start justify-between">
                     <div>
                         <p class="text-gray-400 text-sm mb-2">Pending Review</p>
-                        <h3 class="text-4xl font-bold" id="pendingReview">5</h3>
+                        <h3 class="text-4xl font-bold" id="pendingReview">0</h3>
                     </div>
                     <div class="bg-yellow-500/20 p-3 rounded-lg">
                         <i class="fas fa-clock text-yellow-500 text-2xl"></i>
@@ -97,7 +237,7 @@
                 <div class="flex items-start justify-between">
                     <div>
                         <p class="text-gray-400 text-sm mb-2">Approved</p>
-                        <h3 class="text-4xl font-bold" id="approvedCount">16</h3>
+                        <h3 class="text-4xl font-bold" id="approvedCount">0</h3>
                     </div>
                     <div class="bg-green-500/20 p-3 rounded-lg">
                         <i class="fas fa-circle-check text-green-500 text-2xl"></i>
@@ -110,7 +250,7 @@
                 <div class="flex items-start justify-between">
                     <div>
                         <p class="text-gray-400 text-sm mb-2">Rejected</p>
-                        <h3 class="text-4xl font-bold" id="rejectedCount">3</h3>
+                        <h3 class="text-4xl font-bold" id="rejectedCount">0</h3>
                     </div>
                     <div class="bg-red-500/20 p-3 rounded-lg">
                         <i class="fas fa-circle-xmark text-red-500 text-2xl"></i>
@@ -126,7 +266,7 @@
                     All Posts
                 </button>
                 <button class="filter-tab bg-gray-800 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-semibold" data-filter="pending">
-                    Pending <span class="bg-yellow-500/20 text-yellow-500 px-2 py-1 rounded-full text-xs ml-2">5</span>
+                    Pending
                 </button>
                 <button class="filter-tab bg-gray-800 hover:bg-gray-700 text-white px-6 py-2 rounded-lg font-semibold" data-filter="approved">
                     Approved
@@ -154,123 +294,198 @@
                         </tr>
                     </thead>
                     <tbody id="postsTableBody">
-                        <!-- Sample data - will be replaced by Firebase data -->
-                        <tr class="border-b border-gray-800 hover:bg-gray-800/50" data-status="pending">
-                            <td class="py-4 px-4">2026-01-27</td>
-                            <td class="py-4 px-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-black font-bold">
-                                        J
-                                    </div>
-                                    <span>John Doe</span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <span class="bg-blue-600/20 text-blue-400 px-3 py-1 rounded-full text-sm">
-                                    <i class="fab fa-facebook-f mr-1"></i>facebook
-                                </span>
-                            </td>
-                            <td class="py-4 px-4">
-                                <a href="#" class="text-blue-400 hover:underline">https://facebook.com/post/xyz123</a>
-                            </td>
-                            <td class="py-4 px-4">
-                                <span class="flex items-center gap-2 text-yellow-500">
-                                    <i class="fas fa-clock"></i>
-                                    Pending
-                                </span>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex gap-2">
-                                    <button class="approve-btn bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
-                                        <i class="fas fa-check mr-1"></i>Approve
-                                    </button>
-                                    <button class="reject-btn bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
-                                        <i class="fas fa-times mr-1"></i>Reject
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="border-b border-gray-800 hover:bg-gray-800/50" data-status="approved">
-                            <td class="py-4 px-4">2026-01-26</td>
-                            <td class="py-4 px-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold">
-                                        S
-                                    </div>
-                                    <span>Sarah Smith</span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <span class="bg-pink-600/20 text-pink-400 px-3 py-1 rounded-full text-sm">
-                                    <i class="fab fa-instagram mr-1"></i>instagram
-                                </span>
-                            </td>
-                            <td class="py-4 px-4">
-                                <a href="#" class="text-blue-400 hover:underline">https://instagram.com/p/abc456</a>
-                            </td>
-                            <td class="py-4 px-4">
-                                <span class="flex items-center gap-2 text-green-500">
-                                    <i class="fas fa-circle-check"></i>
-                                    Approved
-                                </span>
-                            </td>
-                            <td class="py-4 px-4">
-                                <span class="text-gray-500 text-sm">+200 points</span>
-                            </td>
-                        </tr>
-                        <tr class="border-b border-gray-800 hover:bg-gray-800/50" data-status="pending">
-                            <td class="py-4 px-4">2026-01-27</td>
-                            <td class="py-4 px-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">
-                                        M
-                                    </div>
-                                    <span>Mike Johnson</span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <span class="bg-blue-600/20 text-blue-400 px-3 py-1 rounded-full text-sm">
-                                    <i class="fab fa-facebook-f mr-1"></i>facebook
-                                </span>
-                            </td>
-                            <td class="py-4 px-4">
-                                <a href="#" class="text-blue-400 hover:underline">https://facebook.com/post/def789</a>
-                            </td>
-                            <td class="py-4 px-4">
-                                <span class="flex items-center gap-2 text-yellow-500">
-                                    <i class="fas fa-clock"></i>
-                                    Pending
-                                </span>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex gap-2">
-                                    <button class="approve-btn bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
-                                        <i class="fas fa-check mr-1"></i>Approve
-                                    </button>
-                                    <button class="reject-btn bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
-                                        <i class="fas fa-times mr-1"></i>Reject
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                        <!-- Posts will be loaded here by Firebase -->
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- Confirmation Modal -->
-    <div id="confirmModal" class="modal items-center justify-center">
+    <!-- Approval Modal with Points Selection -->
+    <div id="approvalModal" class="modal hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center">
         <div class="card rounded-2xl p-8 max-w-md w-full mx-4">
-            <h3 class="text-2xl font-bold mb-4" id="modalTitle">Confirm Action</h3>
-            <p class="text-gray-400 mb-6" id="modalMessage">Are you sure you want to perform this action?</p>
+            <h3 class="text-2xl font-bold mb-4">
+                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                Approve Post
+            </h3>
+            <p class="text-gray-400 mb-6">Select points to award for this post:</p>
+            
+            <!-- Points Selection -->
+            <div class="grid grid-cols-3 gap-4 mb-6">
+                <button class="points-btn bg-gray-800 hover:bg-amber-500 hover:text-black border-2 border-gray-600 hover:border-amber-500 py-6 rounded-lg font-bold text-2xl transition" data-points="50">
+                    50
+                    <div class="text-xs text-gray-400 mt-1">Good</div>
+                </button>
+                <button class="points-btn bg-gray-800 hover:bg-amber-500 hover:text-black border-2 border-gray-600 hover:border-amber-500 py-6 rounded-lg font-bold text-2xl transition active" data-points="75">
+                    75
+                    <div class="text-xs text-gray-400 mt-1">Great</div>
+                </button>
+                <button class="points-btn bg-gray-800 hover:bg-amber-500 hover:text-black border-2 border-gray-600 hover:border-amber-500 py-6 rounded-lg font-bold text-2xl transition" data-points="100">
+                    100
+                    <div class="text-xs text-gray-400 mt-1">Excellent</div>
+                </button>
+            </div>
             
             <div class="flex gap-4">
-                <button id="cancelBtn" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold transition">
+                <button id="cancelApprovalBtn" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold transition">
                     Cancel
                 </button>
-                <button id="confirmBtn" class="flex-1 bg-amber-500 hover:bg-amber-600 text-black py-3 rounded-lg font-semibold transition">
-                    Confirm
+                <button id="confirmApprovalBtn" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-semibold transition">
+                    <i class="fas fa-check mr-2"></i>Approve
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rejection Modal -->
+    <div id="rejectionModal" class="modal hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div class="card rounded-2xl p-8 max-w-md w-full mx-4">
+            <h3 class="text-2xl font-bold mb-4">
+                <i class="fas fa-times-circle text-red-500 mr-2"></i>
+                Reject Post
+            </h3>
+            <p class="text-gray-400 mb-6">Are you sure you want to reject this post?</p>
+            
+            <div class="flex gap-4">
+                <button id="cancelRejectionBtn" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold transition">
+                    Cancel
+                </button>
+                <button id="confirmRejectionBtn" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-semibold transition">
+                    <i class="fas fa-times mr-2"></i>Reject
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Panel -->
+    <div id="notificationsPanel" class="hidden fixed top-20 right-4 w-96 card rounded-2xl p-6 z-50 max-h-96 overflow-y-auto">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-bold flex items-center gap-2">
+                <i class="fas fa-bell text-amber-500"></i>
+                Notifications
+            </h3>
+            <button id="closeNotificationsBtn" class="text-gray-400 hover:text-white">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div id="notificationsList">
+            <!-- Notifications will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Manage Promoters Modal -->
+    <div id="managePromotersModal" class="modal hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div class="card rounded-2xl p-8 max-w-5xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold flex items-center gap-3">
+                    <i class="fas fa-users text-amber-500"></i>
+                    Manage Promoters
+                </h3>
+                <button id="closePromotersBtn" class="text-gray-400 hover:text-white text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-gray-700">
+                            <th class="text-left text-gray-400 font-semibold py-4 px-4">Promoter</th>
+                            <th class="text-left text-gray-400 font-semibold py-4 px-4">Points</th>
+                            <th class="text-left text-gray-400 font-semibold py-4 px-4">Posts</th>
+                            <th class="text-left text-gray-400 font-semibold py-4 px-4">Warnings</th>
+                            <th class="text-left text-gray-400 font-semibold py-4 px-4">Status</th>
+                            <th class="text-left text-gray-400 font-semibold py-4 px-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="promotersTableBody">
+                        <!-- Promoters will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Warning Modal -->
+    <div id="warningModal" class="modal hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div class="card rounded-2xl p-8 max-w-md w-full mx-4">
+            <h3 class="text-2xl font-bold mb-4">
+                <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>
+                Issue Warning
+            </h3>
+            <p class="text-gray-400 mb-4">Promoter: <span id="warningPromoterName" class="text-white font-semibold"></span></p>
+            <textarea 
+                id="warningMessage" 
+                rows="4" 
+                placeholder="Enter warning message..."
+                class="w-full bg-black/30 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 mb-6"
+            ></textarea>
+            
+            <div class="flex gap-4">
+                <button id="cancelWarningBtn" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold transition">
+                    Cancel
+                </button>
+                <button id="confirmWarningBtn" class="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black py-3 rounded-lg font-semibold transition">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>Send Warning
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Suspend Modal -->
+    <div id="suspendModal" class="modal hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div class="card rounded-2xl p-8 max-w-md w-full mx-4">
+            <h3 class="text-2xl font-bold mb-4">
+                <i class="fas fa-ban text-orange-500 mr-2"></i>
+                Suspend Promoter
+            </h3>
+            <p class="text-gray-400 mb-4">Promoter: <span id="suspendPromoterName" class="text-white font-semibold"></span></p>
+            
+            <label class="text-sm text-gray-400 block mb-2">Suspension Duration</label>
+            <select 
+                id="suspensionDuration" 
+                class="w-full bg-black/30 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500 mb-6"
+            >
+                <option value="1">1 Day</option>
+                <option value="3">3 Days</option>
+                <option value="7">7 Days</option>
+                <option value="14">14 Days</option>
+                <option value="30">30 Days</option>
+                <option value="365">1 Year</option>
+            </select>
+            
+            <div class="flex gap-4">
+                <button id="cancelSuspendBtn" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold transition">
+                    Cancel
+                </button>
+                <button id="confirmSuspendBtn" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-semibold transition">
+                    <i class="fas fa-ban mr-2"></i>Suspend
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kick Modal -->
+    <div id="kickModal" class="modal hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div class="card rounded-2xl p-8 max-w-md w-full mx-4">
+            <h3 class="text-2xl font-bold mb-4">
+                <i class="fas fa-user-slash text-red-500 mr-2"></i>
+                Kick Promoter
+            </h3>
+            <p class="text-gray-400 mb-6">
+                Promoter: <span id="kickPromoterName" class="text-white font-semibold"></span>
+            </p>
+            <p class="text-red-400 mb-6">
+                <i class="fas fa-exclamation-circle mr-2"></i>
+                This will permanently remove the promoter from the system and delete their account.
+            </p>
+            
+            <div class="flex gap-4">
+                <button id="cancelKickBtn" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold transition">
+                    Cancel
+                </button>
+                <button id="confirmKickBtn" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-semibold transition">
+                    <i class="fas fa-user-slash mr-2"></i>Kick Permanently
                 </button>
             </div>
         </div>

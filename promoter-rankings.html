@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pastry Vapors - Promoter Rankings</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        .card {
+            background: rgba(30, 30, 30, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Smoke Effect */
+        .smoke-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        .smoke {
+            position: absolute;
+            bottom: -200px;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.75) 0%, rgba(251, 191, 36, 0.65) 20%, rgba(234, 179, 8, 0.5) 40%, rgba(217, 119, 6, 0.3) 60%, transparent 80%);
+            border-radius: 50%;
+            filter: blur(50px);
+            animation: cigaretteSmoke 20s infinite ease-in-out;
+            opacity: 0;
+        }
+        
+        .smoke:nth-child(1) {
+            left: 15%;
+            animation-delay: 0s;
+            animation-duration: 18s;
+            width: 180px;
+            height: 180px;
+        }
+        
+        .smoke:nth-child(2) {
+            left: 35%;
+            animation-delay: 3s;
+            animation-duration: 22s;
+            width: 160px;
+            height: 160px;
+        }
+        
+        .smoke:nth-child(3) {
+            left: 50%;
+            animation-delay: 6s;
+            animation-duration: 20s;
+            width: 190px;
+            height: 190px;
+        }
+        
+        .smoke:nth-child(4) {
+            left: 65%;
+            animation-delay: 9s;
+            animation-duration: 19s;
+            width: 170px;
+            height: 170px;
+        }
+        
+        .smoke:nth-child(5) {
+            left: 80%;
+            animation-delay: 12s;
+            animation-duration: 21s;
+            width: 200px;
+            height: 200px;
+        }
+        
+        .smoke:nth-child(6) {
+            left: 25%;
+            animation-delay: 15s;
+            animation-duration: 23s;
+            width: 150px;
+            height: 150px;
+        }
+        
+        .smoke:nth-child(7) {
+            left: 70%;
+            animation-delay: 18s;
+            animation-duration: 17s;
+            width: 175px;
+            height: 175px;
+        }
+        
+        @keyframes cigaretteSmoke {
+            0% {
+                bottom: -200px;
+                opacity: 0;
+                transform: translateX(0) translateY(0) rotate(0deg) scale(0.5);
+            }
+            5% {
+                opacity: 0.75;
+            }
+            15% {
+                opacity: 0.75;
+                transform: translateX(30px) translateY(-100px) rotate(10deg) scale(1);
+            }
+            30% {
+                opacity: 0.7;
+                transform: translateX(-20px) translateY(-250px) rotate(-15deg) scale(1.3);
+            }
+            45% {
+                opacity: 0.65;
+                transform: translateX(40px) translateY(-400px) rotate(20deg) scale(1.6);
+            }
+            60% {
+                opacity: 0.5;
+                transform: translateX(-30px) translateY(-550px) rotate(-10deg) scale(1.9);
+            }
+            75% {
+                opacity: 0.35;
+                transform: translateX(25px) translateY(-700px) rotate(15deg) scale(2.2);
+            }
+            90% {
+                opacity: 0.2;
+                transform: translateX(-15px) translateY(-850px) rotate(-5deg) scale(2.5);
+            }
+            100% {
+                bottom: 100%;
+                opacity: 0;
+                transform: translateX(0) translateY(-1000px) rotate(0deg) scale(3);
+            }
+        }
+
+        .rank-badge {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .rank-1 {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+        }
+
+        .rank-2 {
+            background: linear-gradient(135deg, #C0C0C0 0%, #808080 100%);
+            box-shadow: 0 0 20px rgba(192, 192, 192, 0.5);
+        }
+
+        .rank-3 {
+            background: linear-gradient(135deg, #CD7F32 0%, #8B4513 100%);
+            box-shadow: 0 0 20px rgba(205, 127, 50, 0.5);
+        }
+
+        .podium {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .podium-item {
+            width: 280px;
+            text-align: center;
+        }
+
+        .podium-platform {
+            background: linear-gradient(135deg, rgba(30, 30, 30, 0.9) 0%, rgba(20, 20, 20, 0.9) 100%);
+            border: 2px solid;
+            border-radius: 1rem 1rem 0 0;
+            padding: 2rem 1.5rem;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .podium-1 .podium-platform {
+            border-color: #FFD700;
+            min-height: 320px;
+        }
+
+        .podium-2 .podium-platform {
+            border-color: #C0C0C0;
+            min-height: 260px;
+        }
+
+        .podium-3 .podium-platform {
+            border-color: #CD7F32;
+            min-height: 220px;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid;
+            margin: 0 auto 1rem;
+        }
+    </style>
+</head>
+<body class="text-white">
+    <!-- Smoke Effect Background -->
+    <div class="smoke-container">
+        <div class="smoke"></div>
+        <div class="smoke"></div>
+        <div class="smoke"></div>
+        <div class="smoke"></div>
+        <div class="smoke"></div>
+        <div class="smoke"></div>
+        <div class="smoke"></div>
+    </div>
+    
+    <!-- Navigation Bar -->
+    <nav class="bg-black/50 backdrop-blur-md border-b border-gray-800 sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <a href="promoter-dashboard.html" class="hover:opacity-80 transition">
+                        <img src="logo/Pastry Vapors 2017 Logo.png" alt="Pastry Vapors Logo" class="h-12 w-auto">
+                    </a>
+                    <span class="text-white font-bold text-xl">Promoter Rankings</span>
+                </div>
+                
+                <div class="flex items-center gap-6">
+                    <a href="user-profile.html" class="text-gray-400 hover:text-white transition">
+                        <i class="fas fa-user-circle mr-2"></i>User Profile
+                    </a>
+                    <a href="promoter-dashboard.html" class="text-gray-400 hover:text-white transition">
+                        <i class="fas fa-chart-line mr-2"></i>Dashboard
+                    </a>
+                    <button id="logoutBtn" class="text-gray-400 hover:text-white transition">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Page Header -->
+        <div class="text-center mb-12">
+            <div class="flex items-center justify-center gap-3 mb-4">
+                <div class="bg-amber-500 p-4 rounded-lg">
+                    <i class="fas fa-trophy text-black text-3xl"></i>
+                </div>
+            </div>
+            <h1 class="text-4xl font-bold mb-3">Top Promoters</h1>
+            <p class="text-gray-400 text-lg">Compete, Earn, and Climb the Rankings!</p>
+        </div>
+
+        <!-- Top 3 Podium -->
+        <div id="podiumContainer" class="podium mb-12">
+            <!-- Will be populated by JS -->
+        </div>
+
+        <!-- Full Rankings Table -->
+        <div class="card rounded-2xl p-8">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                <i class="fas fa-ranking-star text-amber-500"></i>
+                Complete Rankings
+            </h2>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-gray-700">
+                            <th class="text-left text-gray-400 font-semibold py-4 px-4">Rank</th>
+                            <th class="text-left text-gray-400 font-semibold py-4 px-4">Promoter</th>
+                            <th class="text-left text-gray-400 font-semibold py-4 px-4">Total Points</th>
+                            <th class="text-left text-gray-400 font-semibold py-4 px-4">Approved Posts</th>
+                            <th class="text-left text-gray-400 font-semibold py-4 px-4">Avg Points/Post</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rankingsTableBody">
+                        <!-- Loading state -->
+                        <tr>
+                            <td colspan="5" class="text-center py-12 text-gray-400">
+                                <i class="fas fa-spinner fa-spin text-3xl mb-3"></i>
+                                <p>Loading rankings...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase and App Scripts -->
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="rankings.js"></script>
+</body>
+</html>
