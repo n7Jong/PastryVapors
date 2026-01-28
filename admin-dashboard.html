@@ -197,6 +197,12 @@
                 </button>
                 
                 <div class="nav-links flex items-center gap-6">
+                    <button id="createAnnouncementBtn" class="text-gray-400 hover:text-white transition">
+                        <i class="fas fa-bullhorn mr-2"></i><span class="hidden sm:inline">Announcement</span>
+                    </button>
+                    <button id="toggleSignupBtn" class="text-gray-400 hover:text-white transition">
+                        <i class="fas fa-user-plus mr-2"></i><span class="hidden sm:inline">Signup: <span id="signupStatus">Loading...</span></span>
+                    </button>
                     <a href="manage-promoters.html" class="text-gray-400 hover:text-white transition">
                         <i class="fas fa-users mr-2"></i><span class="hidden sm:inline">Manage Promoters</span>
                     </a>
@@ -313,22 +319,20 @@
                 <i class="fas fa-check-circle text-green-500 mr-2"></i>
                 Approve Post
             </h3>
-            <p class="text-gray-400 mb-6">Select points to award for this post:</p>
+            <p class="text-gray-400 mb-6" id="approvalModalMessage">This post will award points based on the task type.</p>
             
-            <!-- Points Selection -->
-            <div class="grid grid-cols-3 gap-4 mb-6">
-                <button class="points-btn bg-gray-800 hover:bg-amber-500 hover:text-black border-2 border-gray-600 hover:border-amber-500 py-6 rounded-lg font-bold text-2xl transition" data-points="50">
-                    50
-                    <div class="text-xs text-gray-400 mt-1">Good</div>
-                </button>
-                <button class="points-btn bg-gray-800 hover:bg-amber-500 hover:text-black border-2 border-gray-600 hover:border-amber-500 py-6 rounded-lg font-bold text-2xl transition active" data-points="75">
-                    75
-                    <div class="text-xs text-gray-400 mt-1">Great</div>
-                </button>
-                <button class="points-btn bg-gray-800 hover:bg-amber-500 hover:text-black border-2 border-gray-600 hover:border-amber-500 py-6 rounded-lg font-bold text-2xl transition" data-points="100">
-                    100
-                    <div class="text-xs text-gray-400 mt-1">Excellent</div>
-                </button>
+            <!-- Points input for group-share and hype-comment -->
+            <div id="pointsInputSection" class="mb-6 hidden">
+                <label class="text-sm text-gray-400 block mb-2">
+                    Points to Award (1 pt per picture recommended)
+                </label>
+                <input 
+                    type="number" 
+                    id="pointsInput" 
+                    min="1" 
+                    class="w-full bg-black/30 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500"
+                    placeholder="Enter points"
+                >
             </div>
             
             <div class="flex gap-4">
@@ -359,6 +363,61 @@
                     <i class="fas fa-times mr-2"></i>Reject
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- Announcement Modal -->
+    <div id="announcementModal" class="modal hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div class="card rounded-2xl p-8 max-w-2xl w-full mx-4">
+            <h3 class="text-2xl font-bold mb-4">
+                <i class="fas fa-bullhorn text-amber-500 mr-2"></i>
+                Create Announcement
+            </h3>
+            
+            <form id="announcementForm" class="space-y-4">
+                <div>
+                    <label class="text-sm text-gray-400 block mb-2">Announcement Title</label>
+                    <input 
+                        type="text" 
+                        id="announcementTitle"
+                        class="w-full bg-black/30 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500"
+                        placeholder="Enter announcement title"
+                        required
+                    >
+                </div>
+                
+                <div>
+                    <label class="text-sm text-gray-400 block mb-2">Message</label>
+                    <textarea 
+                        id="announcementMessage"
+                        rows="4"
+                        class="w-full bg-black/30 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500"
+                        placeholder="Enter announcement message"
+                        required
+                    ></textarea>
+                </div>
+                
+                <div>
+                    <label class="text-sm text-gray-400 block mb-2">Priority</label>
+                    <select 
+                        id="announcementPriority"
+                        class="w-full bg-black/30 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500"
+                    >
+                        <option value="info">Info (Blue)</option>
+                        <option value="warning">Warning (Yellow)</option>
+                        <option value="important">Important (Red)</option>
+                    </select>
+                </div>
+                
+                <div class="flex gap-4 mt-6">
+                    <button type="button" id="cancelAnnouncementBtn" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold transition">
+                        Cancel
+                    </button>
+                    <button type="submit" class="flex-1 bg-amber-500 hover:bg-amber-600 text-black py-3 rounded-lg font-semibold transition">
+                        <i class="fas fa-paper-plane mr-2"></i>Create Announcement
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 

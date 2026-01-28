@@ -46,6 +46,124 @@
             animation-duration: 12s;
         }
 
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loader {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(245, 158, 11, 0.2);
+            border-top: 5px solid #f59e0b;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            color: #f59e0b;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .loading-progress {
+            width: 200px;
+            height: 4px;
+            background: rgba(245, 158, 11, 0.2);
+            border-radius: 2px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+
+        .loading-progress-bar {
+            height: 100%;
+            background: #f59e0b;
+            width: 0;
+            animation: progress 5s ease-in-out forwards;
+        }
+
+        @keyframes progress {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        /* Mobile Actions Menu */
+        .actions-menu {
+            position: relative;
+        }
+
+        .actions-dropdown {
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            min-width: 150px;
+            display: none;
+        }
+
+        .actions-dropdown.active {
+            display: block;
+        }
+
+        .actions-dropdown button {
+            width: 100%;
+            text-align: left;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .actions-dropdown button:hover {
+            background: #374151;
+        }
+
+        @media (min-width: 768px) {
+            .mobile-actions-btn {
+                display: none;
+            }
+            .desktop-actions {
+                display: flex !important;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .desktop-actions {
+                display: none !important;
+            }
+            .mobile-actions-btn {
+                display: block;
+            }
+        }
+
         .status-badge {
             display: inline-block;
             padding: 4px 12px;
@@ -183,6 +301,16 @@
     </style>
 </head>
 <body class="relative">
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <img src="logo/Pastry Vapors 2017 Logo.png" alt="Logo" class="h-20 mb-8 animate-pulse">
+        <div class="loader"></div>
+        <p class="loading-text">Loading Promoters...</p>
+        <div class="loading-progress">
+            <div class="loading-progress-bar"></div>
+        </div>
+    </div>
+
     <!-- Smoke Effects -->
     <div class="smoke" style="left: 10%; top: 20%;"></div>
     <div class="smoke"></div>
@@ -268,10 +396,10 @@
                     <thead class="bg-gray-900">
                         <tr>
                             <th class="px-6 py-4 text-left text-amber-500 font-semibold">Promoter</th>
-                            <th class="px-6 py-4 text-center text-amber-500 font-semibold">Points</th>
-                            <th class="px-6 py-4 text-center text-amber-500 font-semibold">Posts</th>
-                            <th class="px-6 py-4 text-center text-amber-500 font-semibold">Warnings</th>
-                            <th class="px-6 py-4 text-center text-amber-500 font-semibold">Status</th>
+                            <th class="px-6 py-4 text-center text-amber-500 font-semibold hidden md:table-cell">Points</th>
+                            <th class="px-6 py-4 text-center text-amber-500 font-semibold hidden md:table-cell">Posts</th>
+                            <th class="px-6 py-4 text-center text-amber-500 font-semibold hidden md:table-cell">Warnings</th>
+                            <th class="px-6 py-4 text-center text-amber-500 font-semibold hidden sm:table-cell">Status</th>
                             <th class="px-6 py-4 text-center text-amber-500 font-semibold">Actions</th>
                         </tr>
                     </thead>

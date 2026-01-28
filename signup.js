@@ -1,5 +1,55 @@
 // Signup Page JavaScript
-import { auth, db, createUserWithEmailAndPassword, doc, setDoc, Timestamp } from './firebase-config.js';
+import { auth, db, createUserWithEmailAndPassword, doc, setDoc, getDoc, Timestamp } from './firebase-config.js';
+
+// Check if signup is enabled
+async function checkSignupStatus() {
+    try {
+        console.log('Checking signup status...');
+        const settingsDoc = await getDoc(doc(db, 'settings', 'signup'));
+        
+        console.log('Settings doc exists:', settingsDoc.exists());
+        if (settingsDoc.exists()) {
+            console.log('Settings data:', settingsDoc.data());
+        }
+        
+        if (settingsDoc.exists() && settingsDoc.data().enabled === false) {
+            console.log('Signup is DISABLED - hiding form');
+            // Hide entire content wrapper and show disabled message
+            const contentWrapper = document.querySelector('.content-wrapper');
+            if (contentWrapper) {
+                contentWrapper.innerHTML = `
+                    <div class="glass-effect rounded-2xl p-12">
+                        <div class="text-center py-12">
+                            <i class="fas fa-user-slash text-6xl text-red-500 mb-6"></i>
+                            <h2 class="text-3xl font-bold text-white mb-4">Signup Currently Unavailable</h2>
+                            <p class="text-gray-300 text-lg mb-4">Signup is not available right now.</p>
+                            <p class="text-amber-400 text-xl font-semibold mb-8">Contact Team Leader or Sub Team Leader to register.</p>
+                            <a href="index.html" class="inline-block bg-amber-500 hover:bg-amber-600 text-black px-8 py-3 rounded-lg font-semibold transition">
+                                <i class="fas fa-arrow-left mr-2"></i>Back to Login
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }
+            return false;
+        }
+        console.log('Signup is ENABLED - showing form');
+        return true;
+    } catch (error) {
+        console.error('Error checking signup status:', error);
+        // Default to allowing signup if check fails
+        return true;
+    }
+}
+
+// Wait for DOM to be ready, then check signup status
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        checkSignupStatus();
+    });
+} else {
+    checkSignupStatus();
+}
 
 // Helper function to capitalize first letter
 function capitalizeFirstLetter(str) {

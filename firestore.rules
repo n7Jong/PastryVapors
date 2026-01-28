@@ -101,11 +101,20 @@ service cloud.firestore {
     
     // Settings Collection (Optional - for app configuration)
     match /settings/{docId} {
-      // Everyone can read settings
-      allow read: if isAuthenticated();
+      // Everyone can read settings (including unauthenticated for signup check)
+      allow read: if true;
       
       // Only admins can modify settings
       allow write: if isAdmin();
+    }
+    
+    // Announcements Collection
+    match /announcements/{announcementId} {
+      // All authenticated users can read active announcements
+      allow read: if isAuthenticated();
+      
+      // Only admins can create/update/delete announcements
+      allow create, update, delete: if isAdmin();
     }
   }
 }

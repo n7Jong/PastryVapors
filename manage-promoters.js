@@ -4,13 +4,35 @@ import { collection, query, where, getDocs, doc, updateDoc, deleteDoc, getDoc, i
 
 let allPromoters = [];
 let currentPromoter = null;
+let isLoading = false;
+
+// Show loading screen
+function showLoadingScreen() {
+    const loadingScreen = document.getElementById('loadingScreen');
+    if (loadingScreen) {
+        loadingScreen.classList.remove('hidden');
+    }
+}
+
+// Hide loading screen with minimum display time
+function hideLoadingScreen() {
+    const loadingScreen = document.getElementById('loadingScreen');
+    if (loadingScreen) {
+        // Minimum 5 seconds display time
+        setTimeout(() => {
+            loadingScreen.classList.add('hidden');
+        }, 5000);
+    }
+}
 
 // Auth State Observer
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         if (userDoc.exists() && userDoc.data().isAdmin) {
-            loadPromoters();
+            showLoadingScreen();
+            await loadPromoters();
+            hideLoadingScreen();
         } else {
             window.location.href = 'index.html';
         }
@@ -161,20 +183,21 @@ function displayPromoters() {
                         </div>
                     </div>
                 </td>
-                <td class="px-6 py-4 text-center">
+                <td class="px-6 py-4 text-center hidden md:table-cell">
                     <span class="text-amber-500 font-bold text-lg">${promoter.points || 0}</span>
                 </td>
-                <td class="px-6 py-4 text-center">
+                <td class="px-6 py-4 text-center hidden md:table-cell">
                     <span class="text-white font-semibold">${promoter.postCount || 0}</span>
                 </td>
-                <td class="px-6 py-4 text-center">
+                <td class="px-6 py-4 text-center hidden md:table-cell">
                     <span class="text-white font-semibold ${(promoter.warnings || 0) > 0 ? 'text-red-500' : ''}">${promoter.warnings || 0}</span>
                 </td>
-                <td class="px-6 py-4 text-center">
+                <td class="px-6 py-4 text-center hidden sm:table-cell">
                     <span class="status-badge ${statusClass}">${statusText}</span>
                 </td>
                 <td class="px-6 py-4">
-                    <div class="flex gap-2 justify-center flex-wrap">
+                    <!-- Desktop Actions -->
+                    <div class="desktop-actions gap-2 justify-center flex-wrap hidden md:flex">
                         <button onclick="viewPromoterDetails('${promoter.id}')" 
                                 class="action-btn" style="background-color: #3b82f6; color: white;">
                             <i class="fas fa-eye mr-1"></i>View
@@ -183,14 +206,49 @@ function displayPromoters() {
                                 class="action-btn warning-btn">
                             <i class="fas fa-exclamation-triangle mr-1"></i>Warn
                         </button>
-                        <button onclick="openSuspendModal('${promoter.id}', '${displayName.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" 
-                                class="action-btn suspend-btn">
-                            <i class="fas fa-ban mr-1"></i>Suspend
-                        </button>
+                        ${isSuspended ? `
+                            <button onclick="unsuspendPromoter('${promoter.id}', '${displayName.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" 
+                                    class="action-btn" style="background-color: #10b981; color: white;">
+                                <i class="fas fa-check mr-1"></i>Unsuspend
+                            </button>
+                        ` : `
+                            <button onclick="openSuspendModal('${promoter.id}', '${displayName.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" 
+                                    class="action-btn suspend-btn">
+                                <i class="fas fa-ban mr-1"></i>Suspend
+                            </button>
+                        `}
                         <button onclick="openKickModal('${promoter.id}', '${displayName.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" 
                                 class="action-btn kick-btn">
                             <i class="fas fa-user-times mr-1"></i>Kick
                         </button>
+                    </div>
+                    
+                    <!-- Mobile Actions Menu -->
+                    <div class="mobile-actions-btn md:hidden actions-menu">
+                        <button onclick="toggleActionsMenu('${promoter.id}')" 
+                                class="action-btn" style="background-color: #6b7280; color: white;">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <div id="actions-menu-${promoter.id}" class="actions-dropdown">
+                            <button onclick="viewPromoterDetails('${promoter.id}'); closeAllMenus();">
+                                <i class="fas fa-eye mr-2"></i>View
+                            </button>
+                            <button onclick="openWarningModal('${promoter.id}', '${displayName.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'); closeAllMenus();">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>Warn
+                            </button>
+                            ${isSuspended ? `
+                                <button onclick="unsuspendPromoter('${promoter.id}', '${displayName.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'); closeAllMenus();">
+                                    <i class="fas fa-check mr-2"></i>Unsuspend
+                                </button>
+                            ` : `
+                                <button onclick="openSuspendModal('${promoter.id}', '${displayName.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'); closeAllMenus();">
+                                    <i class="fas fa-ban mr-2"></i>Suspend
+                                </button>
+                            `}
+                            <button onclick="openKickModal('${promoter.id}', '${displayName.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'); closeAllMenus();">
+                                <i class="fas fa-user-times mr-2"></i>Kick
+                            </button>
+                        </div>
                     </div>
                 </td>
             </tr>
@@ -425,6 +483,25 @@ document.getElementById('confirmSuspendBtn').addEventListener('click', async () 
     }
 });
 
+// Unsuspend Promoter Function
+window.unsuspendPromoter = async (userId, userName) => {
+    if (confirm(`Are you sure you want to unsuspend ${userName}?`)) {
+        try {
+            const userRef = doc(db, 'users', userId);
+            await updateDoc(userRef, {
+                suspended: false,
+                suspendedUntil: null
+            });
+            
+            alert(`${userName} has been unsuspended!`);
+            loadPromoters();
+        } catch (error) {
+            console.error('Error unsuspending promoter:', error);
+            alert('Failed to unsuspend promoter. Please try again.');
+        }
+    }
+};
+
 // Kick Modal Functions
 window.openKickModal = (userId, userName) => {
     currentPromoter = userId;
@@ -472,5 +549,33 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
         window.location.href = 'index.html';
     } catch (error) {
         console.error('Error signing out:', error);
+    }
+});
+
+// Mobile Actions Menu Functions
+window.toggleActionsMenu = (promoterId) => {
+    const menu = document.getElementById(`actions-menu-${promoterId}`);
+    const allMenus = document.querySelectorAll('.actions-dropdown');
+    
+    // Close all other menus
+    allMenus.forEach(m => {
+        if (m.id !== `actions-menu-${promoterId}`) {
+            m.classList.remove('active');
+        }
+    });
+    
+    // Toggle current menu
+    menu.classList.toggle('active');
+};
+
+window.closeAllMenus = () => {
+    const allMenus = document.querySelectorAll('.actions-dropdown');
+    allMenus.forEach(m => m.classList.remove('active'));
+};
+
+// Close menus when clicking outside
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.actions-menu')) {
+        closeAllMenus();
     }
 });

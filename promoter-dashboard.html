@@ -150,6 +150,37 @@
                 transform: translateX(0) translateY(-1000px) rotate(0deg) scale(3);
             }
         }
+        
+        /* Streak Flame Animation */
+        .streak-flame {
+            animation: flameFlicker 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes flameFlicker {
+            0%, 100% {
+                transform: scale(1) translateY(0);
+                filter: hue-rotate(0deg);
+            }
+            25% {
+                transform: scale(1.1) translateY(-2px);
+                filter: hue-rotate(10deg);
+            }
+            50% {
+                transform: scale(0.95) translateY(0);
+                filter: hue-rotate(-5deg);
+            }
+            75% {
+                transform: scale(1.05) translateY(-1px);
+                filter: hue-rotate(5deg);
+            }
+        }
+        
+        #streakIcon {
+            background: linear-gradient(180deg, #fbbf24 0%, #f97316 50%, #ef4444 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
     </style>
 </head>
 <body class="text-white">
@@ -198,8 +229,11 @@
     </nav>
 
     <div class="container mx-auto px-4 py-8">
+        <!-- Announcements Banner -->
+        <div id="announcementsBanner"></div>
+        
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <!-- Total Points -->
             <div class="stat-card rounded-xl p-6">
                 <div class="flex items-start justify-between">
@@ -211,6 +245,21 @@
                     <div class="bg-amber-500/20 p-3 rounded-lg">
                         <i class="fas fa-arrow-trend-up text-amber-500 text-2xl"></i>
                     </div>
+                </div>
+            </div>
+
+            <!-- Streak Card -->
+            <div class="stat-card rounded-xl p-6 relative overflow-hidden">
+                <div class="absolute top-0 right-0 text-8xl opacity-10">🔥</div>
+                <div class="relative z-10">
+                    <p class="text-gray-400 text-sm mb-2">Current Streak</p>
+                    <div class="flex items-center gap-3">
+                        <div class="streak-flame">
+                            <i class="fas fa-fire text-5xl" id="streakIcon"></i>
+                        </div>
+                        <h3 class="text-5xl font-bold" id="streakDays">0</h3>
+                    </div>
+                    <p class="text-gray-500 text-sm mt-2" id="streakMessage">Start your streak!</p>
                 </div>
             </div>
 
@@ -307,19 +356,19 @@
                             type="button" 
                             class="task-type-btn bg-black/50 border border-gray-600 hover:border-amber-500 text-gray-400 py-4 rounded-lg font-semibold transition flex items-center justify-center gap-2"
                             data-task="group-share"
-                            data-points="20"
+                            data-points="1"
                         >
                             <i class="fas fa-share-nodes"></i>
-                            Group Share (20 pts)
+                            Group Share (1 pt/pic)
                         </button>
                         <button 
                             type="button" 
                             class="task-type-btn bg-black/50 border border-gray-600 hover:border-amber-500 text-gray-400 py-4 rounded-lg font-semibold transition flex items-center justify-center gap-2"
                             data-task="hype-comment"
-                            data-points="10"
+                            data-points="1"
                         >
                             <i class="fas fa-comment"></i>
-                            Hype Comment (10 pts)
+                            Hype Comment (1 pt/pic)
                         </button>
                     </div>
                     <input type="hidden" id="selectedTaskType" value="hand-check" required>
@@ -474,12 +523,20 @@
                     screenshotsSection.style.display = 'none';
                     postUrlInput.required = true;
                     screenshotInput.required = false;
+                    
+                    // Clear screenshots when switching to URL-only tasks
+                    if (window.clearAllScreenshots) {
+                        window.clearAllScreenshots();
+                    }
                 } else if (taskType === 'group-share' || taskType === 'hype-comment') {
                     // Only Screenshots required
                     postUrlSection.style.display = 'none';
                     screenshotsSection.style.display = 'block';
                     postUrlInput.required = false;
                     screenshotInput.required = true;
+                    
+                    // Clear URL when switching to screenshot-only tasks
+                    postUrlInput.value = '';
                 }
             });
         });

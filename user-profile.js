@@ -3,58 +3,12 @@ import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/
 import { doc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 let currentUser = null;
-let cloudinaryWidget = null;
-let uploadedImageUrl = null;
+let uploadedImageFile = null; // Store file object instead of URL
+let previewImageUrl = null; // Local preview URL
 
 // Cloudinary configuration
 const CLOUDINARY_CLOUD_NAME = 'dy9tkp58u';
-const CLOUDINARY_UPLOAD_PRESET = 'pastryvapors_preset'; // Use default unsigned preset for now
-
-// Initialize Cloudinary Upload Widget
-function initCloudinaryWidget() {
-    cloudinaryWidget = cloudinary.createUploadWidget({
-        cloudName: CLOUDINARY_CLOUD_NAME,
-        uploadPreset: CLOUDINARY_UPLOAD_PRESET,
-        sources: ['local', 'camera'],
-        multiple: false,
-        maxFiles: 1,
-        maxFileSize: 5000000, // 5MB
-        clientAllowedFormats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
-        folder: 'pastryvapors',
-        resourceType: 'image',
-        cropping: true,
-        croppingAspectRatio: 1,
-        croppingShowDimensions: true,
-        showSkipCropButton: false,
-        styles: {
-            palette: {
-                window: "#1a1a1a",
-                sourceBg: "#0a0a0a",
-                windowBorder: "#F59E0B",
-                tabIcon: "#F59E0B",
-                inactiveTabIcon: "#666666",
-                menuIcons: "#F59E0B",
-                link: "#F59E0B",
-                action: "#F59E0B",
-                inProgress: "#EAB308",
-                complete: "#10B981",
-                error: "#EF4444",
-                textDark: "#ffffff",
-                textLight: "#cccccc"
-            }
-        }
-    }, (error, result) => {
-        if (!error && result && result.event === "success") {
-            uploadedImageUrl = result.info.secure_url;
-            document.getElementById('profilePicture').src = uploadedImageUrl;
-            showMessage('Profile picture uploaded successfully! Click "Save Changes" to update your profile.', 'success');
-        }
-        if (error) {
-            console.error('Cloudinary upload error:', error);
-            showMessage('Error uploading image. Please try again.', 'error');
-        }
-    });
-}
+const CLOUDINARY_UPLOAD_PRESET = 'pastryvapors_preset';
 
 // Check authentication state
 onAuthStateChanged(auth, async (user) => {
@@ -111,7 +65,6 @@ async function loadUserProfile() {
             // Load profile picture if exists
             if (userData.profilePicture) {
                 document.getElementById('profilePicture').src = userData.profilePicture;
-                uploadedImageUrl = userData.profilePicture;
             }
         }
     } catch (error) {
@@ -122,11 +75,130 @@ async function loadUserProfile() {
 
 // Handle profile picture upload button click
 document.getElementById('uploadBtn').addEventListener('click', () => {
-    if (!cloudinaryWidget) {
-        initCloudinaryWidget();
-    }
-    cloudinaryWidget.open();
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = handleProfilePictureSelect;
+    input.click();
 });
+
+// Handle profile picture selection
+async function handleProfilePictureSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    if (!file.type.startsWith('image/')) {
+        showMessage('Please select an image file', 'error');
+        return;
+    }
+    
+    // Store the file
+    uploadedImageFile = file;
+    
+    // Create local preview
+    if (previewImageUrl) {
+        URL.revokeObjectURL(previewImageUrl);
+    }
+    previewImageUrl = URL.createObjectURL(file);
+    
+    // Show preview
+    document.getElementById('profilePicture').src = previewImageUrl;
+    showMessage('Profile picture selected! Click "Save Changes" to upload.', 'success');
+}
+
+// Compress image function (same as promoter.js)
+async function compressImage(file, maxSizeMB = 5, maxWidthOrHeight = 1920, quality = 0.8) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        
+        reader.onload = (e) => {
+            const img = new Image();
+            
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Calculate new dimensions
+                let width = img.width;
+                let height = img.height;
+                
+                if (width > height) {
+                    if (width > maxWidthOrHeight) {
+                        height = (height * maxWidthOrHeight) / width;
+                        width = maxWidthOrHeight;
+                    }
+                } else {
+                    if (height > maxWidthOrHeight) {
+                        width = (width * maxWidthOrHeight) / height;
+                        height = maxWidthOrHeight;
+                    }
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                
+                // Draw and compress
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // Convert to blob with quality adjustment
+                canvas.toBlob(
+                    (blob) => {
+                        if (blob) {
+                            // If still too large, reduce quality further
+                            if (blob.size > maxSizeMB * 1024 * 1024 && quality > 0.3) {
+                                compressImage(file, maxSizeMB, maxWidthOrHeight, quality - 0.1)
+                                    .then(resolve)
+                                    .catch(reject);
+                            } else {
+                                resolve(blob);
+                            }
+                        } else {
+                            reject(new Error('Failed to compress image'));
+                        }
+                    },
+                    'image/jpeg',
+                    quality
+                );
+            };
+            
+            img.onerror = () => reject(new Error('Failed to load image'));
+            img.src = e.target.result;
+        };
+        
+        reader.onerror = () => reject(new Error('Failed to read file'));
+        reader.readAsDataURL(file);
+    });
+}
+
+// Loading overlay functions
+function showLoadingOverlay(message = 'Loading...') {
+    let overlay = document.getElementById('loadingOverlay');
+    
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'loadingOverlay';
+        overlay.className = 'fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center';
+        overlay.innerHTML = `
+            <div class="bg-gray-900 rounded-2xl p-8 max-w-sm mx-4 text-center border border-amber-500/30">
+                <div class="mb-4">
+                    <div class="inline-block animate-spin rounded-full h-16 w-16 border-4 border-gray-700 border-t-amber-500"></div>
+                </div>
+                <p class="text-white text-lg font-semibold" id="loadingMessage">${message}</p>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    } else {
+        document.getElementById('loadingMessage').textContent = message;
+        overlay.classList.remove('hidden');
+    }
+}
+
+function hideLoadingOverlay() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+        overlay.classList.add('hidden');
+    }
+}
 
 // Handle contact number formatting
 document.getElementById('contactNumber').addEventListener('input', function(e) {
@@ -196,12 +268,59 @@ document.getElementById('profileForm').addEventListener('submit', async (e) => {
         const currentProfilePic = document.getElementById('profilePicture').src;
         const isPlaceholder = currentProfilePic.includes('placeholder') || currentProfilePic.includes('ui-avatars.com');
         
-        if (isPlaceholder && !uploadedImageUrl) {
+        if (isPlaceholder && !uploadedImageFile) {
             showMessage('Please upload a profile picture before saving', 'error');
             saveBtn.disabled = false;
             saveBtn.innerHTML = originalText;
             return;
         }
+        
+        let uploadedImageUrl = null;
+        
+        // Upload profile picture to Cloudinary if a new one was selected
+        if (uploadedImageFile) {
+            try {
+                showLoadingOverlay('Compressing profile picture...');
+                
+                console.log('🗜️ Compressing profile image:', uploadedImageFile.name, 'Original size:', (uploadedImageFile.size / 1024 / 1024).toFixed(2), 'MB');
+                const compressedBlob = await compressImage(uploadedImageFile);
+                console.log('✅ Compressed size:', (compressedBlob.size / 1024 / 1024).toFixed(2), 'MB');
+                
+                showLoadingOverlay('Uploading profile picture...');
+                
+                const formData = new FormData();
+                formData.append('file', compressedBlob, uploadedImageFile.name);
+                formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+                
+                const response = await fetch(
+                    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+                    {
+                        method: 'POST',
+                        body: formData
+                    }
+                );
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('❌ Cloudinary error:', errorData);
+                    throw new Error(errorData.error?.message || 'Upload failed');
+                }
+                
+                const data = await response.json();
+                uploadedImageUrl = data.secure_url;
+                console.log('✅ Profile picture uploaded:', uploadedImageUrl);
+                
+            } catch (error) {
+                console.error('❌ Error uploading profile picture:', error);
+                hideLoadingOverlay();
+                showMessage('Failed to upload profile picture: ' + error.message, 'error');
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalText;
+                return;
+            }
+        }
+        
+        showLoadingOverlay('Saving profile changes...');
         
         // Prepare update data (excluding name and email)
         const updateData = {
@@ -222,7 +341,15 @@ document.getElementById('profileForm').addEventListener('submit', async (e) => {
         // Update Firestore
         await updateDoc(doc(db, 'users', currentUser.uid), updateData);
         
+        hideLoadingOverlay();
         showMessage('Profile updated successfully!', 'success');
+        
+        // Clean up
+        if (previewImageUrl) {
+            URL.revokeObjectURL(previewImageUrl);
+            previewImageUrl = null;
+        }
+        uploadedImageFile = null;
         
         // Reload profile data
         setTimeout(() => {
@@ -231,6 +358,7 @@ document.getElementById('profileForm').addEventListener('submit', async (e) => {
         
     } catch (error) {
         console.error('Error updating profile:', error);
+        hideLoadingOverlay();
         showMessage('Error updating profile: ' + error.message, 'error');
     } finally {
         saveBtn.disabled = false;
@@ -240,8 +368,14 @@ document.getElementById('profileForm').addEventListener('submit', async (e) => {
 
 // Handle cancel button
 document.getElementById('cancelBtn').addEventListener('click', () => {
+    // Clean up preview URL
+    if (previewImageUrl) {
+        URL.revokeObjectURL(previewImageUrl);
+        previewImageUrl = null;
+    }
+    uploadedImageFile = null;
+    
     loadUserProfile(); // Reload original data
-    uploadedImageUrl = null; // Reset uploaded image
     showMessage('Changes cancelled', 'info');
 });
 

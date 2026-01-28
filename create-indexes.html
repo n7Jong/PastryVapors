@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Firestore Indexes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .container {
+            background: #2a2a2a;
+            padding: 30px;
+            border-radius: 10px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+            width: 100%;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        .log {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .error {
+            color: #ff6b6b;
+        }
+        .success {
+            color: #51cf66;
+        }
+        .info {
+            color: #4dabf7;
+        }
+        .link {
+            color: #ffd43b;
+            word-break: break-all;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        h1 {
+            color: #ffd43b;
+        }
+        .instructions {
+            background: #3a3a3a;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 Firestore Index Creator</h1>
+        
+        <div class="instructions">
+            <h3>Instructions:</h3>
+            <ol>
+                <li>Click the button below to trigger the index creation</li>
+                <li>The queries will fail with error messages</li>
+                <li>Click the generated links to create the indexes in Firebase Console</li>
+                <li>Wait 2-5 minutes for indexes to build</li>
+                <li>Refresh your promoter dashboard</li>
+            </ol>
+        </div>
+
+        <button id="triggerIndexes" onclick="triggerIndexCreation()">
+            🚀 Trigger Index Creation
+        </button>
+
+        <div class="log" id="log"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getFirestore, collection, query, where, orderBy, getDocs } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { firebaseConfig } from './firebase-config.js';
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('log');
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = message;
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                addLog(`✅ Logged in as: ${user.email}`, 'success');
+                document.getElementById('triggerIndexes').disabled = false;
+            } else {
+                addLog('❌ Not logged in. Please log in first.', 'error');
+                addLog('Open <a href="index.html" class="link">index.html</a> in another tab to log in.', 'info');
+                document.getElementById('triggerIndexes').disabled = true;
+            }
+        });
+
+        window.triggerIndexCreation = async function() {
+            if (!currentUser) {
+                addLog('❌ Please log in first', 'error');
+                return;
+            }
+
+            document.getElementById('triggerIndexes').disabled = true;
+            addLog('🔄 Starting index creation process...', 'info');
+            addLog('', 'info');
+
+            // Trigger streak query (posts with userId + status + createdAt)
+            try {
+                addLog('📊 Triggering STREAK query...', 'info');
+                const streakQuery = query(
+                    collection(db, 'posts'),
+                    where('userId', '==', currentUser.uid),
+                    where('status', '==', 'approved'),
+                    orderBy('createdAt', 'desc')
+                );
+                await getDocs(streakQuery);
+                addLog('✅ Streak query succeeded (index already exists)', 'success');
+            } catch (error) {
+                addLog('❌ Streak query failed (expected):', 'error');
+                if (error.message.includes('create it here:')) {
+                    const urlMatch = error.message.match(/https:\/\/[^\s]+/);
+                    if (urlMatch) {
+                        const url = urlMatch[0];
+                        addLog(`<a href="${url}" target="_blank" class="link">🔗 Click here to create STREAK index</a>`, 'info');
+                    }
+                } else {
+                    addLog(error.message, 'error');
+                }
+            }
+
+            addLog('', 'info');
+
+            // Trigger announcements query (active + createdAt)
+            try {
+                addLog('📢 Triggering ANNOUNCEMENTS query...', 'info');
+                const announcementsQuery = query(
+                    collection(db, 'announcements'),
+                    where('active', '==', true),
+                    orderBy('createdAt', 'desc')
+                );
+                await getDocs(announcementsQuery);
+                addLog('✅ Announcements query succeeded (index already exists)', 'success');
+            } catch (error) {
+                addLog('❌ Announcements query failed (expected):', 'error');
+                if (error.message.includes('create it here:')) {
+                    const urlMatch = error.message.match(/https:\/\/[^\s]+/);
+                    if (urlMatch) {
+                        const url = urlMatch[0];
+                        addLog(`<a href="${url}" target="_blank" class="link">🔗 Click here to create ANNOUNCEMENTS index</a>`, 'info');
+                    }
+                } else {
+                    addLog(error.message, 'error');
+                }
+            }
+
+            addLog('', 'info');
+            addLog('✅ Process complete!', 'success');
+            addLog('📌 Click the links above to create indexes', 'info');
+            addLog('⏱️ Wait 2-5 minutes for indexes to build', 'info');
+            addLog('🔄 Then refresh your promoter dashboard', 'info');
+            
+            document.getElementById('triggerIndexes').disabled = false;
+        };
+    </script>
+</body>
+</html>

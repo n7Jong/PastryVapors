@@ -1,10 +1,12 @@
 // Admin Dashboard JavaScript
-import { auth, db, signOut, onAuthStateChanged, collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy, getDoc, onSnapshot, where } from './firebase-config.js';
+import { auth, db, signOut, onAuthStateChanged, collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy, getDoc, onSnapshot, where, addDoc, setDoc, Timestamp } from './firebase-config.js';
 
 let currentUser = null;
 let allPosts = [];
 let allPromoters = [];
 let currentActionUserId = null;
+let currentPostId = null;
+let selectedPoints = 0;
 const isDemoMode = localStorage.getItem('demoMode') === 'true';
 
 // Check authentication and admin role
@@ -40,6 +42,7 @@ onAuthStateChanged(auth, async (user) => {
         console.log('🎯 Admin authenticated:', user.email);
         setupNotificationListener();
         loadAdminData();
+        loadSignupStatus();
     }
 });
 
@@ -64,14 +67,17 @@ async function loadAdminData() {
         const querySnapshot = await getDocs(postsQuery);
         
         console.log('📝 Posts found:', querySnapshot.size);
+        console.log('📝 Query snapshot:', querySnapshot);
         
         allPosts = [];
         querySnapshot.forEach((doc) => {
-            console.log('Post:', doc.id, doc.data());
-            allPosts.push({ id: doc.id, ...doc.data() });
+            const postData = doc.data();
+            console.log('Post:', doc.id, postData);
+            allPosts.push({ id: doc.id, ...postData });
         });
         
         console.log('✅ Total posts loaded:', allPosts.length);
+        console.log('✅ All posts array:', allPosts);
         
         // Sort by createdAt in JavaScript (descending)
         allPosts.sort((a, b) => {
@@ -80,13 +86,30 @@ async function loadAdminData() {
             return bTime - aTime;
         });
         
+        console.log('📊 Updating stats and table...');
         updateAdminStats(allPosts);
         updatePostsTable(allPosts);
         updateNotificationBadge(allPosts);
+        console.log('✅ Admin data loaded successfully');
         
     } catch (error) {
         console.error('❌ Error loading admin data:', error);
         console.error('Error details:', error.message);
+        console.error('Error stack:', error.stack);
+        
+        // Show error message in the table
+        const tbody = document.getElementById('postsTableBody');
+        if (tbody) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="py-8 text-center text-red-500">
+                        <i class="fas fa-exclamation-circle text-3xl mb-3"></i>
+                        <p>Error loading submissions: ${error.message}</p>
+                        <p class="text-sm mt-2">Check console for details</p>
+                    </td>
+                </tr>
+            `;
+        }
     }
 }
 
@@ -111,10 +134,17 @@ function updateAdminStats(posts) {
 
 // Update posts table
 function updatePostsTable(posts) {
+    console.log('📋 updatePostsTable called with', posts.length, 'posts');
     const tbody = document.getElementById('postsTableBody');
-    if (!tbody) return;
+    console.log('📋 Table body element:', tbody);
+    
+    if (!tbody) {
+        console.error('❌ Table body element not found!');
+        return;
+    }
     
     if (posts.length === 0) {
+        console.log('📋 No posts to display');
         tbody.innerHTML = `
             <tr>
                 <td colspan="6" class="py-8 text-center text-gray-500">
@@ -125,7 +155,10 @@ function updatePostsTable(posts) {
         return;
     }
     
-    tbody.innerHTML = posts.map((post, index) => {
+    console.log('📋 Generating table HTML for', posts.length, 'posts');
+    
+    try {
+        tbody.innerHTML = posts.map((post, index) => {
         const date = post.createdAt ? 
             (post.createdAt.toDate ? post.createdAt.toDate().toISOString().split('T')[0] : post.createdAt) :
             new Date().toISOString().split('T')[0];
@@ -134,19 +167,40 @@ function updatePostsTable(posts) {
         const platformIcon = post.platform === 'facebook' ? 'facebook-f' : 'instagram';
         const statusInfo = getStatusInfo(post.status);
         const userName = post.userName || (post.userEmail ? post.userEmail.split('@')[0] : 'User ' + (index + 1));
-        const userInitial = userName.charAt(0).toUpperCase();
-        const avatarColors = ['yellow', 'purple', 'blue', 'green', 'pink'];
-        const avatarColor = avatarColors[index % avatarColors.length];
+        
+        // Get task type display
+        const taskTypeMap = {
+            'hand-check': { icon: 'hand-point-up', text: 'Hand-check', color: 'amber' },
+            'video-content': { icon: 'video', text: 'Video Content', color: 'purple' },
+            'group-share': { icon: 'share-nodes', text: 'Group Share', color: 'blue' },
+            'hype-comment': { icon: 'comment', text: 'Hype Comment', color: 'green' }
+        };
+        
+        // Debug log for task type
+        if (index === 0) {
+            console.log('📝 Post task data:', {
+                taskType: post.taskType,
+                taskPoints: post.taskPoints,
+                postId: post.id
+            });
+        }
+        
+        const taskInfo = taskTypeMap[post.taskType] || { icon: 'file', text: 'Unknown', color: 'gray' };
         
         return `
             <tr class="border-b border-gray-800 hover:bg-gray-800/50" data-status="${post.status}" data-post-id="${post.id}">
                 <td class="py-4 px-4">${date}</td>
                 <td class="py-4 px-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 bg-${avatarColor}-500 rounded-full flex items-center justify-center text-white font-bold">
-                            ${userInitial}
+                    <div class="flex items-center gap-3" data-user-id="${post.userId}">
+                        <img src="" class="user-profile-pic w-10 h-10 rounded-full object-cover border-2 border-amber-500/30" 
+                             onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=f59e0b&color=000&size=128'">
+                        <div>
+                            <div class="font-semibold">${userName}</div>
+                            <div class="text-xs text-gray-400">
+                                <i class="fas fa-${taskInfo.icon} text-${taskInfo.color}-500 mr-1"></i>
+                                ${taskInfo.text} (${post.taskPoints || 0} pts)
+                            </div>
                         </div>
-                        <span>${userName}</span>
                     </div>
                 </td>
                 <td class="py-4 px-4">
@@ -190,29 +244,89 @@ function updatePostsTable(posts) {
         `;
     }).join('');
     
+    console.log('✅ Table HTML generated successfully');
+    
     // Attach event listeners to approve/reject buttons
     attachActionButtons();
+    
+    // Load profile pictures for users
+    loadUserProfilePictures();
+    
+    } catch (error) {
+        console.error('❌ Error generating table HTML:', error);
+        console.error('Error details:', error.message);
+        console.error('Error stack:', error.stack);
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="py-8 text-center text-red-500">
+                    Error displaying posts: ${error.message}
+                </td>
+            </tr>
+        `;
+    }
+}
+
+// Load profile pictures for users in the table
+async function loadUserProfilePictures() {
+    const userCells = document.querySelectorAll('[data-user-id]');
+    
+    for (const cell of userCells) {
+        const userId = cell.dataset.userId;
+        if (!userId) continue;
+        
+        try {
+            const userDoc = await getDoc(doc(db, 'users', userId));
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                const img = cell.querySelector('.user-profile-pic');
+                if (img && userData.profilePicture) {
+                    img.src = userData.profilePicture;
+                }
+            }
+        } catch (error) {
+            console.error('Error loading profile picture for user:', userId, error);
+        }
+    }
 }
 
 // Attach event listeners to action buttons
 function attachActionButtons() {
-    document.querySelectorAll('.approve-btn').forEach(btn => {
+    console.log('🔘 Attaching action buttons...');
+    
+    const approveBtns = document.querySelectorAll('.approve-btn');
+    const rejectBtns = document.querySelectorAll('.reject-btn');
+    const screenshotBtns = document.querySelectorAll('.view-screenshots-btn');
+    
+    console.log('Found approve buttons:', approveBtns.length);
+    console.log('Found reject buttons:', rejectBtns.length);
+    console.log('Found screenshot buttons:', screenshotBtns.length);
+    
+    approveBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             const postId = e.currentTarget.dataset.postId;
+            console.log('✅ Approve clicked for post:', postId);
             showApprovalModal(postId);
         });
     });
     
-    document.querySelectorAll('.reject-btn').forEach(btn => {
+    rejectBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             const postId = e.currentTarget.dataset.postId;
+            console.log('❌ Reject clicked for post:', postId);
             showRejectionModal(postId);
         });
     });
     
-    document.querySelectorAll('.view-screenshots-btn').forEach(btn => {
+    screenshotBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             const postId = e.currentTarget.dataset.postId;
+            console.log('📷 View screenshots clicked for post:', postId);
             showScreenshotModal(postId);
         });
     });
@@ -284,33 +398,76 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-let currentPostId = null;
-let selectedPoints = 75; // Default points
-
-// Show approval modal with points selection
+// Show approval modal with fixed points based on task type
 function showApprovalModal(postId) {
+    console.log('📋 Opening approval modal for post:', postId);
     currentPostId = postId;
-    selectedPoints = 75; // Reset to default
+    const post = allPosts.find(p => p.id === postId);
+    
+    if (!post) {
+        console.error('❌ Post not found:', postId);
+        return;
+    }
+    
+    console.log('📋 Post data:', post);
     
     const modal = document.getElementById('approvalModal');
-    modal.classList.remove('hidden');
     
-    // Reset points buttons
-    document.querySelectorAll('.points-btn').forEach(btn => {
-        btn.classList.remove('bg-amber-500', 'text-black', 'border-amber-500');
-        btn.classList.add('bg-gray-800', 'border-gray-600');
-        if (btn.dataset.points === '75') {
-            btn.classList.add('bg-amber-500', 'text-black', 'border-amber-500');
-            btn.classList.remove('bg-gray-800', 'border-gray-600');
-        }
-    });
+    if (!modal) {
+        console.error('❌ Approval modal not found!');
+        return;
+    }
+    
+    // Update modal to show task-specific information
+    const taskTypeMap = {
+        'hand-check': { name: 'Hand-check', points: 15, adjustable: false },
+        'video-content': { name: 'Video Content', points: 25, adjustable: false },
+        'group-share': { name: 'Group Share', points: post.taskPoints || post.screenshots?.length || 1, adjustable: true },
+        'hype-comment': { name: 'Hype Comment', points: post.taskPoints || post.screenshots?.length || 1, adjustable: true }
+    };
+    
+    const taskInfo = taskTypeMap[post.taskType] || { name: 'Post', points: 15, adjustable: false };
+    selectedPoints = taskInfo.points;
+    
+    const modalText = modal.querySelector('#approvalModalMessage');
+    const pointsInputSection = document.getElementById('pointsInputSection');
+    const pointsInput = document.getElementById('pointsInput');
+    
+    if (taskInfo.adjustable) {
+        // Show points input for group-share and hype-comment
+        const screenshotCount = post.screenshots?.length || 0;
+        modalText.textContent = `This ${taskInfo.name} has ${screenshotCount} screenshot${screenshotCount !== 1 ? 's' : ''}. Adjust points if needed:`;
+        pointsInputSection.classList.remove('hidden');
+        pointsInput.value = selectedPoints;
+        pointsInput.max = screenshotCount * 2; // Allow up to 2 points per screenshot
+        
+        // Update selectedPoints when input changes
+        pointsInput.oninput = (e) => {
+            selectedPoints = parseInt(e.target.value) || 1;
+        };
+    } else {
+        // Fixed points for hand-check and video-content
+        modalText.textContent = `This ${taskInfo.name} will award ${selectedPoints} points.`;
+        pointsInputSection.classList.add('hidden');
+    }
+    
+    modal.classList.remove('hidden');
+    console.log('✅ Approval modal opened with', selectedPoints, 'points');
 }
 
 // Show rejection modal
 function showRejectionModal(postId) {
+    console.log('📋 Opening rejection modal for post:', postId);
     currentPostId = postId;
     const modal = document.getElementById('rejectionModal');
+    
+    if (!modal) {
+        console.error('❌ Rejection modal not found!');
+        return;
+    }
+    
     modal.classList.remove('hidden');
+    console.log('✅ Rejection modal opened');
 }
 
 // Points selection handlers
@@ -338,7 +495,17 @@ document.getElementById('cancelApprovalBtn')?.addEventListener('click', () => {
 
 document.getElementById('confirmApprovalBtn')?.addEventListener('click', async () => {
     if (currentPostId) {
-        await handleAction('approve', currentPostId, selectedPoints);
+        // Get points from input if visible, otherwise use selectedPoints
+        const pointsInput = document.getElementById('pointsInput');
+        const pointsInputSection = document.getElementById('pointsInputSection');
+        
+        let finalPoints = selectedPoints;
+        if (pointsInputSection && !pointsInputSection.classList.contains('hidden')) {
+            finalPoints = parseInt(pointsInput.value) || selectedPoints;
+        }
+        
+        console.log('✅ Approving with', finalPoints, 'points');
+        await handleAction('approve', currentPostId, finalPoints);
         document.getElementById('approvalModal').classList.add('hidden');
         currentPostId = null;
     }
@@ -499,16 +666,23 @@ let notificationsUnsubscribe = null;
 let allNotifications = [];
 
 function setupNotificationListener() {
+    // Query without orderBy to avoid index requirement
     const notificationsQuery = query(
         collection(db, 'notifications'),
-        where('read', '==', false),
-        orderBy('createdAt', 'desc')
+        where('read', '==', false)
     );
     
     notificationsUnsubscribe = onSnapshot(notificationsQuery, (snapshot) => {
         allNotifications = [];
         snapshot.forEach((doc) => {
             allNotifications.push({ id: doc.id, ...doc.data() });
+        });
+        
+        // Sort by createdAt in JavaScript instead
+        allNotifications.sort((a, b) => {
+            const aTime = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
+            const bTime = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
+            return bTime - aTime; // Descending order (newest first)
         });
         
         // Update badge
@@ -527,6 +701,11 @@ function setupNotificationListener() {
         }
         
         console.log('🔔 Notifications updated:', allNotifications.length);
+        console.log('📋 Notification data:', allNotifications);
+    }, (error) => {
+        console.error('❌ Error listening to notifications:', error);
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
     });
 }
 
@@ -560,6 +739,13 @@ async function loadNotifications() {
     notificationsList.innerHTML = allNotifications.map(notification => {
         const date = notification.createdAt?.toDate ? notification.createdAt.toDate().toLocaleString() : 'Just now';
         const userName = notification.userName || notification.userEmail?.split('@')[0] || 'User';
+        const taskTypeMap = {
+            'hand-check': 'Hand-check',
+            'video-content': 'Video Content',
+            'group-share': 'Group Share',
+            'hype-comment': 'Hype Comment'
+        };
+        const taskName = taskTypeMap[notification.taskType] || 'post';
         
         return `
             <div class="border-b border-gray-700 py-3 hover:bg-gray-800/30 rounded px-2 cursor-pointer" onclick="markNotificationRead('${notification.id}')">
@@ -568,7 +754,7 @@ async function loadNotifications() {
                         <i class="fas fa-file-lines text-yellow-500"></i>
                     </div>
                     <div class="flex-1">
-                        <p class="text-white font-semibold">${userName} submitted a post</p>
+                        <p class="text-white font-semibold">${userName} submitted a ${taskName}</p>
                         <p class="text-gray-400 text-sm">${notification.platform} • ${date}</p>
                     </div>
                     <button class="text-gray-400 hover:text-white" onclick="event.stopPropagation(); deleteNotification('${notification.id}')">
@@ -649,8 +835,9 @@ function displayPromoters() {
     
     tableBody.innerHTML = allPromoters.map(promoter => {
         const warnings = promoter.warnings || 0;
-        const isSuspended = promoter.suspended && new Date(promoter.suspendedUntil) > new Date();
+        const isSuspended = promoter.suspended === true;
         const suspendedUntil = promoter.suspendedUntil ? new Date(promoter.suspendedUntil).toLocaleDateString() : '';
+        const isExpired = promoter.suspendedUntil && new Date(promoter.suspendedUntil) <= new Date();
         
         return `
             <tr class="border-b border-gray-800 hover:bg-gray-800/50">
@@ -685,7 +872,7 @@ function displayPromoters() {
                 <td class="py-4 px-4">
                     ${isSuspended ? `
                         <span class="bg-orange-500/20 text-orange-500 px-2 py-1 rounded-full text-sm">
-                            <i class="fas fa-ban mr-1"></i>Suspended until ${suspendedUntil}
+                            <i class="fas fa-ban mr-1"></i>Suspended ${isExpired ? '(Expired)' : `until ${suspendedUntil}`}
                         </span>
                     ` : `
                         <span class="text-green-500">
@@ -698,9 +885,15 @@ function displayPromoters() {
                         <button class="warn-btn bg-yellow-500/20 hover:bg-yellow-500 hover:text-black text-yellow-500 px-3 py-1 rounded text-sm transition" data-user-id="${promoter.id}" data-user-name="${promoter.fullName || 'User'}">
                             <i class="fas fa-exclamation-triangle"></i>
                         </button>
-                        <button class="suspend-btn bg-orange-500/20 hover:bg-orange-500 hover:text-white text-orange-500 px-3 py-1 rounded text-sm transition" data-user-id="${promoter.id}" data-user-name="${promoter.fullName || 'User'}">
-                            <i class="fas fa-ban"></i>
-                        </button>
+                        ${isSuspended ? `
+                            <button class="unsuspend-btn bg-green-500/20 hover:bg-green-500 hover:text-white text-green-500 px-3 py-1 rounded text-sm transition" data-user-id="${promoter.id}" data-user-name="${promoter.fullName || 'User'}">
+                                <i class="fas fa-check"></i> Unsuspend
+                            </button>
+                        ` : `
+                            <button class="suspend-btn bg-orange-500/20 hover:bg-orange-500 hover:text-white text-orange-500 px-3 py-1 rounded text-sm transition" data-user-id="${promoter.id}" data-user-name="${promoter.fullName || 'User'}">
+                                <i class="fas fa-ban"></i>
+                            </button>
+                        `}
                         <button class="kick-btn bg-red-500/20 hover:bg-red-500 hover:text-white text-red-500 px-3 py-1 rounded text-sm transition" data-user-id="${promoter.id}" data-user-name="${promoter.fullName || 'User'}">
                             <i class="fas fa-user-slash"></i>
                         </button>
@@ -728,6 +921,29 @@ function attachPromoterActionButtons() {
             currentActionUserId = e.currentTarget.dataset.userId;
             document.getElementById('suspendPromoterName').textContent = e.currentTarget.dataset.userName;
             document.getElementById('suspendModal').classList.remove('hidden');
+        });
+    });
+    
+    document.querySelectorAll('.unsuspend-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const userId = e.currentTarget.dataset.userId;
+            const userName = e.currentTarget.dataset.userName;
+            
+            if (confirm(`Are you sure you want to unsuspend ${userName}?`)) {
+                try {
+                    const userRef = doc(db, 'users', userId);
+                    await updateDoc(userRef, {
+                        suspended: false,
+                        suspendedUntil: null
+                    });
+                    
+                    alert(`${userName} has been unsuspended`);
+                    await loadPromoters();
+                } catch (error) {
+                    console.error('Error unsuspending user:', error);
+                    alert('Failed to unsuspend user: ' + error.message);
+                }
+            }
         });
     });
     
@@ -826,5 +1042,98 @@ document.getElementById('confirmKickBtn')?.addEventListener('click', async () =>
     } catch (error) {
         console.error('Error kicking user:', error);
         alert('Failed to kick user: ' + error.message);
+    }
+});
+
+// Announcement Modal Handlers
+document.getElementById('createAnnouncementBtn')?.addEventListener('click', () => {
+    document.getElementById('announcementModal').classList.remove('hidden');
+});
+
+document.getElementById('cancelAnnouncementBtn')?.addEventListener('click', () => {
+    document.getElementById('announcementModal').classList.add('hidden');
+    document.getElementById('announcementForm').reset();
+});
+
+document.getElementById('announcementForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const title = document.getElementById('announcementTitle').value;
+    const message = document.getElementById('announcementMessage').value;
+    const priority = document.getElementById('announcementPriority').value;
+    
+    try {
+        await addDoc(collection(db, 'announcements'), {
+            title: title,
+            message: message,
+            priority: priority,
+            createdAt: Timestamp.now(),
+            createdBy: currentUser.uid,
+            active: true
+        });
+        
+        alert('Announcement created successfully!');
+        document.getElementById('announcementModal').classList.add('hidden');
+        document.getElementById('announcementForm').reset();
+    } catch (error) {
+        console.error('Error creating announcement:', error);
+        alert('Failed to create announcement: ' + error.message);
+    }
+});
+
+// Load and display signup status
+async function loadSignupStatus() {
+    try {
+        const settingsDoc = await getDoc(doc(db, 'settings', 'signup'));
+        const statusElement = document.getElementById('signupStatus');
+        
+        if (settingsDoc.exists()) {
+            const isEnabled = settingsDoc.data().enabled;
+            updateSignupStatusUI(isEnabled);
+        } else {
+            // Default to enabled if no setting exists
+            await updateDoc(doc(db, 'settings', 'signup'), { enabled: true });
+            updateSignupStatusUI(true);
+        }
+    } catch (error) {
+        console.error('Error loading signup status:', error);
+        // If document doesn't exist, create it
+        try {
+            await setDoc(doc(db, 'settings', 'signup'), { enabled: true });
+            updateSignupStatusUI(true);
+        } catch (e) {
+            console.error('Error creating signup settings:', e);
+        }
+    }
+}
+
+function updateSignupStatusUI(isEnabled) {
+    const statusElement = document.getElementById('signupStatus');
+    if (statusElement) {
+        statusElement.textContent = isEnabled ? 'ON' : 'OFF';
+        statusElement.className = isEnabled ? 'text-green-500 font-bold' : 'text-red-500 font-bold';
+    }
+}
+
+// Toggle signup button handler
+document.getElementById('toggleSignupBtn')?.addEventListener('click', async () => {
+    try {
+        const settingsDoc = await getDoc(doc(db, 'settings', 'signup'));
+        const currentStatus = settingsDoc.exists() ? settingsDoc.data().enabled : true;
+        const newStatus = !currentStatus;
+        
+        if (confirm(`Are you sure you want to ${newStatus ? 'ENABLE' : 'DISABLE'} the signup page?`)) {
+            await setDoc(doc(db, 'settings', 'signup'), { 
+                enabled: newStatus,
+                lastUpdated: Timestamp.now(),
+                updatedBy: currentUser.uid
+            });
+            
+            updateSignupStatusUI(newStatus);
+            alert(`Signup page has been ${newStatus ? 'ENABLED' : 'DISABLED'}`);
+        }
+    } catch (error) {
+        console.error('Error toggling signup:', error);
+        alert('Failed to toggle signup: ' + error.message);
     }
 });
