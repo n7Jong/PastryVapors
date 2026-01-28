@@ -85,6 +85,29 @@ async function loadUserProfile() {
             document.getElementById('address').value = userData.address || '';
             document.getElementById('contactNumber').value = userData.contactNumber || '';
             
+            // Populate gender
+            if (userData.gender) {
+                document.getElementById('selectedGender').value = userData.gender;
+                // Update gender button UI
+                document.querySelectorAll('.gender-btn').forEach(btn => {
+                    btn.classList.remove('bg-blue-600', 'bg-pink-600', 'text-white');
+                    btn.classList.add('bg-black/50', 'border', 'border-gray-600', 'text-gray-400');
+                    
+                    if (btn.dataset.gender === userData.gender) {
+                        btn.classList.remove('bg-black/50', 'border', 'border-gray-600', 'text-gray-400');
+                        if (userData.gender === 'male') {
+                            btn.classList.add('bg-blue-600', 'text-white');
+                        } else {
+                            btn.classList.add('bg-pink-600', 'text-white');
+                        }
+                    }
+                });
+            }
+            
+            // Populate Facebook links
+            document.getElementById('primaryFbLink').value = userData.primaryFbLink || '';
+            document.getElementById('promoterFbLink').value = userData.promoterFbLink || '';
+            
             // Load profile picture if exists
             if (userData.profilePicture) {
                 document.getElementById('profilePicture').src = userData.profilePicture;
@@ -151,6 +174,9 @@ document.getElementById('profileForm').addEventListener('submit', async (e) => {
         const birthdate = document.getElementById('birthdate').value;
         const address = document.getElementById('address').value;
         const contactNumber = document.getElementById('contactNumber').value;
+        const gender = document.getElementById('selectedGender').value;
+        const primaryFbLink = document.getElementById('primaryFbLink').value.trim();
+        const promoterFbLink = document.getElementById('promoterFbLink').value.trim();
         
         // Validate birthdate (must be 18 years or older)
         const birthdateObj = new Date(birthdate);
@@ -171,6 +197,9 @@ document.getElementById('profileForm').addEventListener('submit', async (e) => {
             birthdate: birthdate,
             address: address,
             contactNumber: contactNumber,
+            gender: gender,
+            primaryFbLink: primaryFbLink,
+            promoterFbLink: promoterFbLink,
             updatedAt: new Date().toISOString()
         };
         

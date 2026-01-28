@@ -167,8 +167,20 @@ function displayRankingsTable(promoters) {
             </div>`;
         }
         
+        const genderClass = promoter.gender === 'male' ? 'gender-male' : 
+                             promoter.gender === 'female' ? 'gender-female' : '';
+        const genderBadge = promoter.gender === 'male' ? 
+            '<span class="gender-badge-male"><i class="fas fa-mars"></i> Male</span>' :
+            promoter.gender === 'female' ? 
+            '<span class="gender-badge-female"><i class="fas fa-venus"></i> Female</span>' : '';
+        
+        // Debug logging
+        if (index < 5) {
+            console.log(`Promoter ${index + 1}:`, promoter.fullName, 'Gender:', promoter.gender, 'Class:', genderClass);
+        }
+        
         return `
-            <tr class="border-b border-gray-800 hover:bg-gray-800/50">
+            <tr class="border-b border-gray-800 hover:bg-gray-800/50 ${genderClass}">
                 <td class="py-4 px-4">${rankBadge}</td>
                 <td class="py-4 px-4">
                     <div class="flex items-center gap-3">
@@ -178,7 +190,10 @@ function displayRankingsTable(promoters) {
                             class="w-12 h-12 rounded-full object-cover border-2 border-amber-500/30"
                         >
                         <div>
-                            <div class="font-semibold">${promoter.fullName || 'Anonymous'}</div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-semibold">${promoter.fullName || 'Anonymous'}</span>
+                                ${genderBadge}
+                            </div>
                             <div class="text-sm text-gray-400">${promoter.email || ''}</div>
                         </div>
                     </div>

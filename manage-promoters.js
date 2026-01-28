@@ -66,6 +66,7 @@ function displayPromoters() {
     // Get filter values
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
     const statusFilter = document.getElementById('statusFilter').value;
+    const genderFilter = document.getElementById('genderFilter').value;
     const sortBy = document.getElementById('sortBy').value;
     
     // Filter promoters
@@ -84,7 +85,14 @@ function displayPromoters() {
             matchesStatus = promoter.suspended === true;
         }
         
-        return matchesSearch && matchesStatus;
+        let matchesGender = true;
+        if (genderFilter === 'male') {
+            matchesGender = promoter.gender === 'male';
+        } else if (genderFilter === 'female') {
+            matchesGender = promoter.gender === 'female';
+        }
+        
+        return matchesSearch && matchesStatus && matchesGender;
     });
     
     // Sort promoters
@@ -125,14 +133,30 @@ function displayPromoters() {
         const profilePic = promoter.profilePicture || 
             `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=f59e0b&color=000&size=128`;
         
+        const genderClass = promoter.gender === 'male' ? 'gender-male' : 
+                             promoter.gender === 'female' ? 'gender-female' : '';
+        const genderBadge = promoter.gender === 'male' ? 
+            '<span class="gender-badge-male"><i class="fas fa-mars"></i> Male</span>' :
+            promoter.gender === 'female' ? 
+            '<span class="gender-badge-female"><i class="fas fa-venus"></i> Female</span>' : '';
+        
+        // Debug logging - show first 3 promoters
+        const index = filteredPromoters.indexOf(promoter);
+        if (index < 3) {
+            console.log(`Promoter ${index + 1}:`, displayName, 'Gender:', promoter.gender, 'Class:', genderClass);
+        }
+        
         return `
-            <tr class="hover:bg-gray-700 transition">
+            <tr class="hover:bg-gray-700 transition ${genderClass}">
                 <td class="px-6 py-4">
                     <div class="flex items-center gap-3">
                         <img src="${profilePic}" alt="${displayName}" 
                              class="w-12 h-12 rounded-full object-cover">
                         <div>
-                            <p class="text-white font-semibold">${displayName}</p>
+                            <div class="flex items-center gap-2">
+                                <p class="text-white font-semibold">${displayName}</p>
+                                ${genderBadge}
+                            </div>
                             <p class="text-gray-400 text-sm">${promoter.email}</p>
                         </div>
                     </div>
@@ -150,7 +174,11 @@ function displayPromoters() {
                     <span class="status-badge ${statusClass}">${statusText}</span>
                 </td>
                 <td class="px-6 py-4">
-                    <div class="flex gap-2 justify-center">
+                    <div class="flex gap-2 justify-center flex-wrap">
+                        <button onclick="viewPromoterDetails('${promoter.id}')" 
+                                class="action-btn" style="background-color: #3b82f6; color: white;">
+                            <i class="fas fa-eye mr-1"></i>View
+                        </button>
                         <button onclick="openWarningModal('${promoter.id}', '${displayName.replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" 
                                 class="action-btn warning-btn">
                             <i class="fas fa-exclamation-triangle mr-1"></i>Warn
@@ -182,6 +210,148 @@ function updateStats() {
     document.getElementById('suspendedPromoters').textContent = suspended;
     document.getElementById('totalWarnings').textContent = totalWarnings;
 }
+
+// View Promoter Details
+window.viewPromoterDetails = (userId) => {
+    const promoter = allPromoters.find(p => p.id === userId);
+    if (!promoter) return;
+    
+    const firstName = promoter.firstName || '';
+    const lastName = promoter.lastName || '';
+    const middleName = promoter.middleName || '';
+    const fullName = `${firstName} ${middleName} ${lastName}`.trim() || 'Unknown User';
+    const displayName = `${firstName} ${lastName}`.trim() || 'Unknown User';
+    const profilePic = promoter.profilePicture || 
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=f59e0b&color=000&size=200`;
+    
+    const genderIcon = promoter.gender === 'male' ? '<i class="fas fa-mars text-blue-500"></i>' :
+                       promoter.gender === 'female' ? '<i class="fas fa-venus text-pink-500"></i>' : '';
+    const genderText = promoter.gender === 'male' ? 'Male' : promoter.gender === 'female' ? 'Female' : 'Not specified';
+    
+    const modalHTML = `
+        <div id="viewPromoterModal" class="modal active">
+            <div class="bg-gray-800 rounded-lg p-8 max-w-2xl w-full mx-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-start mb-6">
+                    <h3 class="text-2xl font-bold text-white">
+                        <i class="fas fa-user-circle text-amber-500 mr-2"></i>Promoter Details
+                    </h3>
+                    <button onclick="closeViewModal()" class="text-gray-400 hover:text-white text-2xl">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="space-y-6">
+                    <!-- Profile Picture -->
+                    <div class="text-center">
+                        <img src="${profilePic}" alt="${displayName}" 
+                             class="w-32 h-32 rounded-full object-cover mx-auto border-4 border-amber-500">
+                    </div>
+                    
+                    <!-- Personal Information -->
+                    <div class="bg-gray-900 rounded-lg p-6">
+                        <h4 class="text-amber-500 font-semibold mb-4 flex items-center gap-2">
+                            <i class="fas fa-user"></i> Personal Information
+                        </h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-gray-400 text-sm">Full Name</p>
+                                <p class="text-white font-semibold">${fullName}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-400 text-sm">Gender</p>
+                                <p class="text-white font-semibold">${genderIcon} ${genderText}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-400 text-sm">Email</p>
+                                <p class="text-white font-semibold">${promoter.email || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-400 text-sm">Contact Number</p>
+                                <p class="text-white font-semibold">${promoter.contactNumber || 'N/A'}</p>
+                            </div>
+                            <div class="col-span-2">
+                                <p class="text-gray-400 text-sm">Address</p>
+                                <p class="text-white font-semibold">${promoter.address || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-400 text-sm">Birthdate</p>
+                                <p class="text-white font-semibold">${promoter.birthdate || 'N/A'}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Facebook Links -->
+                    <div class="bg-gray-900 rounded-lg p-6">
+                        <h4 class="text-amber-500 font-semibold mb-4 flex items-center gap-2">
+                            <i class="fab fa-facebook"></i> Facebook Links
+                        </h4>
+                        <div class="space-y-3">
+                            <div>
+                                <p class="text-gray-400 text-sm">Primary Facebook</p>
+                                <a href="${promoter.primaryFbLink || '#'}" target="_blank" 
+                                   class="text-blue-400 hover:text-blue-300 break-all">
+                                    ${promoter.primaryFbLink || 'Not provided'}
+                                </a>
+                            </div>
+                            <div>
+                                <p class="text-gray-400 text-sm">Promoter Facebook</p>
+                                <a href="${promoter.promoterFbLink || '#'}" target="_blank" 
+                                   class="text-blue-400 hover:text-blue-300 break-all">
+                                    ${promoter.promoterFbLink || 'Not provided'}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Performance Stats -->
+                    <div class="bg-gray-900 rounded-lg p-6">
+                        <h4 class="text-amber-500 font-semibold mb-4 flex items-center gap-2">
+                            <i class="fas fa-chart-line"></i> Performance Stats
+                        </h4>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="text-center">
+                                <p class="text-gray-400 text-sm">Total Points</p>
+                                <p class="text-2xl font-bold text-amber-500">${promoter.points || 0}</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-gray-400 text-sm">Total Posts</p>
+                                <p class="text-2xl font-bold text-white">${promoter.postCount || 0}</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-gray-400 text-sm">Warnings</p>
+                                <p class="text-2xl font-bold ${(promoter.warnings || 0) > 0 ? 'text-red-500' : 'text-white'}">${promoter.warnings || 0}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Status -->
+                    <div class="bg-gray-900 rounded-lg p-6">
+                        <h4 class="text-amber-500 font-semibold mb-4 flex items-center gap-2">
+                            <i class="fas fa-info-circle"></i> Account Status
+                        </h4>
+                        <div>
+                            <p class="text-gray-400 text-sm">Current Status</p>
+                            <p class="text-white font-semibold">
+                                <span class="status-badge ${promoter.suspended ? 'status-suspended' : 'status-active'}">
+                                    ${promoter.suspended ? 'Suspended' : 'Active'}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+};
+
+window.closeViewModal = () => {
+    const modal = document.getElementById('viewPromoterModal');
+    if (modal) {
+        modal.remove();
+    }
+};
 
 // Warning Modal Functions
 window.openWarningModal = (userId, userName) => {
@@ -291,6 +461,7 @@ document.getElementById('confirmKickBtn').addEventListener('click', async () => 
 // Search and Filter Event Listeners
 document.getElementById('searchInput').addEventListener('input', displayPromoters);
 document.getElementById('statusFilter').addEventListener('change', displayPromoters);
+document.getElementById('genderFilter').addEventListener('change', displayPromoters);
 document.getElementById('sortBy').addEventListener('change', displayPromoters);
 
 // Logout

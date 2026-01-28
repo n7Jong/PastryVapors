@@ -44,6 +44,11 @@ if (signupForm) {
         const confirmPassword = document.getElementById('confirmPassword').value;
         const agreeTerms = document.getElementById('agreeTerms').checked;
         
+        // Get new fields
+        const gender = document.getElementById('selectedGender').value;
+        const primaryFbLink = document.getElementById('primaryFbLink').value.trim();
+        const promoterFbLink = document.getElementById('promoterFbLink').value.trim();
+        
         // Validation
         if (!agreeTerms) {
             alert('Please agree to the Terms and Conditions');
@@ -103,6 +108,11 @@ if (signupForm) {
                 birthdate: birthdate,
                 address: address,
                 contactNumber: contactNumber,
+                
+                // Gender and Social Media
+                gender: gender,
+                primaryFbLink: primaryFbLink,
+                promoterFbLink: promoterFbLink || '',
                 
                 // Account Information
                 email: email,
