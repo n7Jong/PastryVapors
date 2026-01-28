@@ -363,7 +363,7 @@
                     </div>
 
                     <!-- Contact Number -->
-                    <div>
+                    <div class="mb-4">
                         <label class="text-sm text-gray-400 block mb-2">Contact Number</label>
                         <input 
                             type="tel" 
@@ -373,6 +373,59 @@
                             class="w-full bg-black/30 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
                             required
                         >
+                    </div>
+
+                    <!-- Gender Selection -->
+                    <div class="mb-4">
+                        <label class="text-sm text-gray-400 block mb-3">Gender</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button 
+                                type="button" 
+                                class="gender-btn bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-lg font-semibold transition flex items-center justify-center gap-2"
+                                data-gender="male"
+                            >
+                                <i class="fas fa-mars"></i>
+                                Male
+                            </button>
+                            <button 
+                                type="button" 
+                                class="gender-btn bg-black/50 border border-gray-600 hover:border-pink-500 text-gray-400 py-4 rounded-lg font-semibold transition flex items-center justify-center gap-2"
+                                data-gender="female"
+                            >
+                                <i class="fas fa-venus"></i>
+                                Female
+                            </button>
+                        </div>
+                        <input type="hidden" id="selectedGender" value="male" required>
+                    </div>
+
+                    <!-- Primary Facebook Link -->
+                    <div class="mb-4">
+                        <label class="text-sm text-gray-400 block mb-2">Primary Facebook Link</label>
+                        <div class="relative">
+                            <i class="fab fa-facebook absolute left-4 top-1/2 -translate-y-1/2 text-blue-400"></i>
+                            <input 
+                                type="url" 
+                                id="primaryFbLink"
+                                placeholder="https://facebook.com/yourprofile" 
+                                class="w-full bg-black/30 border border-gray-600 rounded-lg px-12 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+                                required
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Promoter Facebook Link (Optional) -->
+                    <div>
+                        <label class="text-sm text-gray-400 block mb-2">Promoter Facebook Link <span class="text-gray-500">(Optional)</span></label>
+                        <div class="relative">
+                            <i class="fab fa-facebook absolute left-4 top-1/2 -translate-y-1/2 text-blue-400"></i>
+                            <input 
+                                type="url" 
+                                id="promoterFbLink"
+                                placeholder="https://facebook.com/yourpage (Optional)" 
+                                class="w-full bg-black/30 border border-gray-600 rounded-lg px-12 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+                            >
+                        </div>
                     </div>
                 </div>
 
@@ -405,6 +458,29 @@
     <script type="module" src="firebase-config.js"></script>
     <script type="module" src="user-profile.js"></script>
     <script>
+        // Gender selection toggle
+        document.querySelectorAll('.gender-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active state from all buttons
+                document.querySelectorAll('.gender-btn').forEach(b => {
+                    b.classList.remove('bg-blue-600', 'bg-pink-600', 'text-white');
+                    b.classList.add('bg-black/50', 'border', 'border-gray-600', 'text-gray-400');
+                });
+                
+                // Add active state to clicked button
+                this.classList.remove('bg-black/50', 'border', 'border-gray-600', 'text-gray-400');
+                
+                const gender = this.dataset.gender;
+                if (gender === 'male') {
+                    this.classList.add('bg-blue-600', 'text-white');
+                } else {
+                    this.classList.add('bg-pink-600', 'text-white');
+                }
+                
+                document.getElementById('selectedGender').value = gender;
+            });
+        });
+
         function toggleMobileMenu() {
             const navLinks = document.querySelector('.nav-links');
             navLinks.classList.toggle('active');

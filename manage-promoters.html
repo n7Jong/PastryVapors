@@ -152,6 +152,26 @@
         .mobile-menu-btn {
             display: none;
         }
+
+        .gender-male {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.1) 100%);
+            border-left: 4px solid #3b82f6;
+        }
+
+        .gender-female {
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(219, 39, 119, 0.1) 100%);
+            border-left: 4px solid #ec4899;
+        }
+
+        .gender-badge-male {
+            background-color: #3b82f6;
+            color: white;
+        }
+
+        .gender-badge-female {
+            background-color: #ec4899;
+            color: white;
+        }
     </style>
 </head>
 <body class="relative">
@@ -199,7 +219,7 @@
 
         <!-- Search and Filters -->
         <div class="bg-gray-800 rounded-lg p-6 mb-6 shadow-lg">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                     <label class="text-gray-400 text-sm mb-2 block">Search Promoter</label>
                     <input type="text" id="searchInput" placeholder="Search by name or email..." 
@@ -211,6 +231,14 @@
                         <option value="all">All Promoters</option>
                         <option value="active">Active Only</option>
                         <option value="suspended">Suspended Only</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-gray-400 text-sm mb-2 block">Filter by Gender</label>
+                    <select id="genderFilter" class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg">
+                        <option value="all">All Genders</option>
+                        <option value="male">Male Only</option>
+                        <option value="female">Female Only</option>
                     </select>
                 </div>
                 <div>

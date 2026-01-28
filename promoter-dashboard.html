@@ -270,19 +270,65 @@
                         </button>
                         <button 
                             type="button" 
-                            class="platform-btn bg-black/50 border border-gray-600 hover:border-pink-500 text-gray-400 py-4 rounded-lg font-semibold transition flex items-center justify-center gap-2"
+                            class="platform-btn bg-black/50 border border-gray-600 text-gray-600 py-4 rounded-lg font-semibold transition flex items-center justify-center gap-2 opacity-50 cursor-not-allowed"
                             data-platform="instagram"
+                            disabled
                         >
                             <i class="fab fa-instagram"></i>
-                            Instagram
+                            Instagram (Coming Soon)
                         </button>
                     </div>
                     <input type="hidden" id="selectedPlatform" value="facebook" required>
                 </div>
 
-                <!-- Post URL -->
+                <!-- Task Type Selection -->
                 <div>
-                    <label class="text-sm text-gray-400 block mb-3">Post URL</label>
+                    <label class="text-sm text-gray-400 block mb-3">Task Type</label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button 
+                            type="button" 
+                            class="task-type-btn bg-amber-500 hover:bg-amber-600 text-black py-4 rounded-lg font-semibold transition flex items-center justify-center gap-2"
+                            data-task="hand-check"
+                            data-points="15"
+                        >
+                            <i class="fas fa-hand-point-up"></i>
+                            Hand-check (15 pts)
+                        </button>
+                        <button 
+                            type="button" 
+                            class="task-type-btn bg-black/50 border border-gray-600 hover:border-amber-500 text-gray-400 py-4 rounded-lg font-semibold transition flex items-center justify-center gap-2"
+                            data-task="video-content"
+                            data-points="25"
+                        >
+                            <i class="fas fa-video"></i>
+                            Video Content (25 pts)
+                        </button>
+                        <button 
+                            type="button" 
+                            class="task-type-btn bg-black/50 border border-gray-600 hover:border-amber-500 text-gray-400 py-4 rounded-lg font-semibold transition flex items-center justify-center gap-2"
+                            data-task="group-share"
+                            data-points="20"
+                        >
+                            <i class="fas fa-share-nodes"></i>
+                            Group Share (20 pts)
+                        </button>
+                        <button 
+                            type="button" 
+                            class="task-type-btn bg-black/50 border border-gray-600 hover:border-amber-500 text-gray-400 py-4 rounded-lg font-semibold transition flex items-center justify-center gap-2"
+                            data-task="hype-comment"
+                            data-points="10"
+                        >
+                            <i class="fas fa-comment"></i>
+                            Hype Comment (10 pts)
+                        </button>
+                    </div>
+                    <input type="hidden" id="selectedTaskType" value="hand-check" required>
+                    <input type="hidden" id="taskPoints" value="15" required>
+                </div>
+
+                <!-- Post URL -->
+                <div id="postUrlSection">
+                    <label class="text-sm text-gray-400 block mb-3">Post URL <span class="text-amber-500">*</span></label>
                     <input 
                         type="url" 
                         id="postUrlInput"
@@ -293,8 +339,8 @@
                 </div>
 
                 <!-- Screenshots Upload -->
-                <div>
-                    <label class="text-sm text-gray-400 block mb-3">Upload Screenshots (Max 10)</label>
+                <div id="screenshotsSection" style="display: none;">
+                    <label class="text-sm text-gray-400 block mb-3">Upload Screenshots (Max 10) <span class="text-amber-500">*</span></label>
                     <div class="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-amber-500 transition cursor-pointer" id="screenshotDropZone">
                         <input 
                             type="file" 
@@ -398,6 +444,46 @@
     <script type="module" src="promoter.js"></script>
 
     <script>
+        // Task type selection toggle
+        document.querySelectorAll('.task-type-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active state from all buttons
+                document.querySelectorAll('.task-type-btn').forEach(b => {
+                    b.classList.remove('bg-amber-500', 'text-black');
+                    b.classList.add('bg-black/50', 'border', 'border-gray-600', 'text-gray-400');
+                });
+                
+                // Add active state to clicked button
+                this.classList.remove('bg-black/50', 'border', 'border-gray-600', 'text-gray-400');
+                this.classList.add('bg-amber-500', 'text-black');
+                
+                const taskType = this.dataset.task;
+                const taskPoints = this.dataset.points;
+                document.getElementById('selectedTaskType').value = taskType;
+                document.getElementById('taskPoints').value = taskPoints;
+                
+                // Show/hide fields based on task type
+                const postUrlSection = document.getElementById('postUrlSection');
+                const screenshotsSection = document.getElementById('screenshotsSection');
+                const postUrlInput = document.getElementById('postUrlInput');
+                const screenshotInput = document.getElementById('screenshotInput');
+                
+                if (taskType === 'hand-check' || taskType === 'video-content') {
+                    // Only Facebook URL required
+                    postUrlSection.style.display = 'block';
+                    screenshotsSection.style.display = 'none';
+                    postUrlInput.required = true;
+                    screenshotInput.required = false;
+                } else if (taskType === 'group-share' || taskType === 'hype-comment') {
+                    // Only Screenshots required
+                    postUrlSection.style.display = 'none';
+                    screenshotsSection.style.display = 'block';
+                    postUrlInput.required = false;
+                    screenshotInput.required = true;
+                }
+            });
+        });
+        
         // Platform selection toggle
         document.querySelectorAll('.platform-btn').forEach(btn => {
             btn.addEventListener('click', function() {
