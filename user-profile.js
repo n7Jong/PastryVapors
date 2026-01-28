@@ -192,6 +192,17 @@ document.getElementById('profileForm').addEventListener('submit', async (e) => {
             return;
         }
         
+        // Check if profile picture exists
+        const currentProfilePic = document.getElementById('profilePicture').src;
+        const isPlaceholder = currentProfilePic.includes('placeholder') || currentProfilePic.includes('ui-avatars.com');
+        
+        if (isPlaceholder && !uploadedImageUrl) {
+            showMessage('Please upload a profile picture before saving', 'error');
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = originalText;
+            return;
+        }
+        
         // Prepare update data (excluding name and email)
         const updateData = {
             birthdate: birthdate,
