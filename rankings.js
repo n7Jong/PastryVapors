@@ -64,6 +64,16 @@ async function loadRankings() {
     }
 }
 
+// Helper function to convert full name to initials
+function getInitials(fullName) {
+    if (!fullName) return 'AN';
+    const names = fullName.trim().split(' ');
+    if (names.length === 1) {
+        return names[0].substring(0, 2).toUpperCase();
+    }
+    return names.map(name => name.charAt(0).toUpperCase()).join('');
+}
+
 // Display top 3 podium
 function displayPodium(topThree) {
     const podiumContainer = document.getElementById('podiumContainer');
@@ -103,6 +113,13 @@ function displayPodium(topThree) {
         const profilePic = promoter.profilePicture || 
             `https://ui-avatars.com/api/?name=${encodeURIComponent(promoter.fullName || 'User')}&background=F59E0B&color=000&size=200`;
         
+        const initials = getInitials(promoter.fullName);
+        const fullName = promoter.fullName || 'Anonymous';
+        
+        // Create unique data attributes for modal
+        const rankText = rank === '1' ? '🥇 First Place' : rank === '2' ? '🥈 Second Place' : '🥉 Third Place';
+        const trophyIcon = rank === '1' ? '🏆' : rank === '2' ? '🥈' : '🥉';
+        
         return `
             <div class="podium-item podium-${rank}">
                 <div class="podium-platform">
@@ -111,11 +128,16 @@ function displayPodium(topThree) {
                     </div>
                     <img 
                         src="${profilePic}" 
-                        alt="${promoter.fullName || 'Promoter'}" 
+                        alt="${fullName}" 
                         class="profile-avatar"
                         style="border-color: ${colors[rank].border}"
                     >
-                    <h3 class="text-xl font-bold mb-2">${promoter.fullName || 'Anonymous'}</h3>
+                    <h3 class="text-xl font-bold mb-2 transition-colors" 
+                        onclick="showNameModal('${fullName.replace(/'/g, "\\'")}', '${rankText}', '${trophyIcon}', ${promoter.points}, ${promoter.totalApprovedPosts})" 
+                        title="Click to view details">
+                        <span class="name-full">${fullName}</span>
+                        <span class="name-initials">${initials}</span>
+                    </h3>
                     <div class="text-3xl font-bold text-amber-500 mb-2">
                         ${promoter.points}
                         <span class="text-sm text-gray-400">pts</span>
@@ -145,8 +167,43 @@ function displayRankingsTable(promoters) {
         return;
     }
     
-    tableBody.innerHTML = promoters.map((promoter, index) => {
-        const rank = index + 1;
+    // Helper function to format name for mobile (initials + lastname)
+    function formatMobileName(fullName) {
+        if (!fullName) return 'Anonymous';
+        const parts = fullName.trim().split(' ');
+        if (parts.length === 1) return fullName;
+        
+        // Get first name initial, middle name initial (if exists), and last name
+        const firstName = parts[0];
+        const lastName = parts[parts.length - 1];
+        
+        let initials = firstName.charAt(0).toUpperCase() + '.';
+        
+        // Add middle initial if exists
+        if (parts.length > 2) {
+            initials += parts[1].charAt(0).toUpperCase() + '.';
+        }
+        
+        return `${initials} ${lastName}`;
+    }
+    
+    // Skip top 3 as they are already shown in podium
+    const displayPromoters = promoters.slice(3);
+    
+    if (displayPromoters.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="5" class="text-center py-12 text-gray-400">
+                    <i class="fas fa-trophy text-3xl mb-3"></i>
+                    <p>Top promoters are shown in the podium above</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tableBody.innerHTML = displayPromoters.map((promoter, index) => {
+        const rank = index + 4; // Start from rank 4
         const avgPoints = promoter.totalApprovedPosts > 0 
             ? (promoter.points / promoter.totalApprovedPosts).toFixed(1) 
             : '0.0';
@@ -185,37 +242,51 @@ function displayRankingsTable(promoters) {
             console.log(`Promoter ${index + 1}:`, promoter.fullName, 'Gender:', promoter.gender, 'Class:', genderClass);
         }
         
+        // Format mobile name
+        const mobileDisplayName = formatMobileName(promoter.fullName);
+        
         return `
             <tr class="border-b border-gray-800 hover:bg-gray-800/50 ${genderClass}">
-                <td class="py-4 px-4">${rankBadge}</td>
-                <td class="py-4 px-4">
-                    <div class="flex items-center gap-3">
+                <td class="py-4 px-6 align-middle" data-label="Rank">${rankBadge}</td>
+                <td class="py-4 px-6 align-middle" data-label="Promoter">
+                    <div class="flex items-center gap-4">
                         <img 
                             src="${profilePic}" 
                             alt="${promoter.fullName || 'Promoter'}" 
                             class="w-12 h-12 rounded-full object-cover border-2 border-amber-500/30"
                         >
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <span class="font-semibold">${promoter.fullName || 'Anonymous'}</span>
+                        <div class="flex flex-col justify-center gap-1">
+                            <div class="flex items-center gap-3">
+                                <span class="font-semibold hidden md:inline">${promoter.fullName || 'Anonymous'}</span>
+                                <span class="font-semibold md:hidden">${mobileDisplayName}</span>
                                 ${genderBadge}
                             </div>
-                            <div class="text-sm text-gray-400">${promoter.email || ''}</div>
+                            <div class="text-sm text-gray-400 hidden md:block">${promoter.email || ''}</div>
                         </div>
                     </div>
                 </td>
-                <td class="py-4 px-4">
+                <td class="py-4 px-6 align-middle" data-label="Total Points">
                     <span class="text-2xl font-bold text-amber-500">${promoter.points}</span>
                 </td>
-                <td class="py-4 px-4">
+                <td class="py-4 px-6 align-middle hide-mobile" data-label="Approved Posts">
                     <span class="text-lg">${promoter.totalApprovedPosts}</span>
                 </td>
-                <td class="py-4 px-4">
+                <td class="py-4 px-6 align-middle hide-mobile" data-label="Avg Points">
                     <span class="text-lg text-gray-300">${avgPoints}</span>
                 </td>
             </tr>
         `;
     }).join('');
+}
+
+// Show name modal
+window.showNameModal = function(name, rank, trophy, points, posts) {
+    document.getElementById('modalName').textContent = name;
+    document.getElementById('modalRank').textContent = rank;
+    document.getElementById('modalTrophy').textContent = trophy;
+    document.getElementById('modalPoints').textContent = points;
+    document.getElementById('modalPosts').textContent = posts;
+    document.getElementById('nameModal').classList.add('active');
 }
 
 // Handle logout

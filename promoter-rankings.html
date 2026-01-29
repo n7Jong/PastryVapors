@@ -183,8 +183,20 @@
         }
 
         .podium-item {
-            width: 280px;
             text-align: center;
+        }
+        
+        /* Different sizes for each podium position */
+        .podium-1 {
+            width: 320px; /* Large */
+        }
+        
+        .podium-2 {
+            width: 260px; /* Medium */
+        }
+        
+        .podium-3 {
+            width: 220px; /* Small */
         }
 
         .podium-platform {
@@ -216,12 +228,26 @@
         }
 
         .profile-avatar {
-            width: 100px;
-            height: 100px;
             border-radius: 50%;
             object-fit: cover;
             border: 4px solid;
             margin: 0 auto 1rem;
+        }
+        
+        /* Different avatar sizes */
+        .podium-1 .profile-avatar {
+            width: 120px;
+            height: 120px;
+        }
+        
+        .podium-2 .profile-avatar {
+            width: 90px;
+            height: 90px;
+        }
+        
+        .podium-3 .profile-avatar {
+            width: 70px;
+            height: 70px;
         }
         
         /* Glowing Effects for Podium Places */
@@ -264,7 +290,8 @@
             }
         }
         
-        @media (max-width: 768px) {\n            .nav-links {
+        @media (max-width: 768px) {
+            .nav-links {
                 display: none;
             }
             .nav-links.active {
@@ -283,12 +310,292 @@
             .mobile-menu-btn {
                 display: block;
             }
+            
+            /* Minimize podium for mobile */
             .podium {
-                gap: 1rem;
+                gap: 12px !important;
+                display: flex !important;
+                justify-content: center !important;
+                align-items: flex-end !important;
+                width: 100% !important;
+                padding: 0 0.5rem !important;
             }
+            
             .podium-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            /* Podium 1 (Gold - Middle) - Equal Width, Tallest */
+            .podium-1 {
+                width: 115px !important;
+                max-width: 115px !important;
+                min-width: 115px !important;
+                flex: 0 0 115px !important;
+                flex-shrink: 0 !important;
+                flex-grow: 0 !important;
+                box-sizing: border-box !important;
+                order: 2;
+                margin: 0 !important;
+            }
+            
+            /* Podium 2 (Silver - Left) - Equal Width, Medium Height */
+            .podium-2 {
+                width: 115px !important;
+                max-width: 115px !important;
+                min-width: 115px !important;
+                flex: 0 0 115px !important;
+                flex-shrink: 0 !important;
+                flex-grow: 0 !important;
+                box-sizing: border-box !important;
+                order: 1;
+                margin: 0 !important;
+            }
+            
+            /* Podium 3 (Bronze - Right) - Equal Width, Shortest */
+            .podium-3 {
+                width: 115px !important;
+                max-width: 115px !important;
+                min-width: 115px !important;
+                flex: 0 0 115px !important;
+                flex-shrink: 0 !important;
+                flex-grow: 0 !important;
+                box-sizing: border-box !important;
+                order: 3;
+                margin: 0 !important;
+            }
+            
+            /* Platform 1 (Gold) - Tallest */
+            .podium-1 .podium-platform {
+                width: 100% !important;
+                height: 280px !important;
+                min-height: 280px !important;
+                max-height: 280px !important;
+                padding: 16px 10px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: flex-end !important;
+                overflow: hidden !important;
+                box-sizing: border-box !important;
+            }
+            
+            /* Platform 2 (Silver) - Medium Height */
+            .podium-2 .podium-platform {
+                width: 100% !important;
+                height: 240px !important;
+                min-height: 240px !important;
+                max-height: 240px !important;
+                padding: 16px 10px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: flex-end !important;
+                overflow: hidden !important;
+                box-sizing: border-box !important;
+            }
+            
+            /* Platform 3 (Bronze) - Shortest */
+            .podium-3 .podium-platform {
+                width: 100% !important;
+                height: 230px !important;
+                min-height: 230px !important;
+                max-height: 230px !important;
+                padding: 16px 10px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: flex-end !important;
+                overflow: hidden !important;
+                box-sizing: border-box !important;
+            }
+            
+            /* Equal rank badge sizes */
+            .rank-badge {
+                width: 35px !important;
+                height: 35px !important;
+                font-size: 0.875rem !important;
+                flex-shrink: 0;
+            }
+            
+            /* Equal profile avatar sizes */
+            .podium-1 .profile-avatar,
+            .podium-2 .profile-avatar,
+            .podium-3 .profile-avatar {
+                width: 50px !important;
+                height: 50px !important;
+                border: 2px solid !important;
+                flex-shrink: 0;
+            }
+            
+            /* Equal text sizes */
+            .podium-platform h3 {
+                font-size: 0.75rem !important;
+                margin-bottom: 0.25rem !important;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
                 width: 100%;
-                max-width: 280px;
+                line-height: 1.2;
+            }
+            
+            /* Show initials only on mobile */
+            .name-full {
+                display: none !important;
+            }
+            
+            .name-initials {
+                display: inline !important;
+            }
+            
+            /* Enable click on entire podium for mobile */
+            .podium-platform {
+                cursor: pointer !important;
+                pointer-events: auto !important;
+                transition: transform 0.2s, box-shadow 0.2s !important;
+            }
+            
+            .podium-platform:active {
+                transform: scale(0.98) !important;
+            }
+            
+            .podium-1 .podium-platform:hover {
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.6) !important;
+            }
+            
+            .podium-2 .podium-platform:hover {
+                box-shadow: 0 0 20px rgba(192, 192, 192, 0.6) !important;
+            }
+            
+            .podium-3 .podium-platform:hover {
+                box-shadow: 0 0 20px rgba(205, 127, 50, 0.6) !important;
+            }
+            
+            .podium-platform .text-3xl {
+                font-size: 1.5rem !important;
+                line-height: 1 !important;
+                margin: 0.25rem 0 !important;
+            }
+            
+            .podium-platform .text-sm {
+                font-size: 0.625rem !important;
+                white-space: nowrap;
+                line-height: 1.2;
+            }
+            
+            /* Ensure initials container stays compact */
+            .podium-platform > div {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.25rem;
+            }
+            
+            /* Single line rankings for mobile */
+            .rankings-table thead {
+                display: none;
+            }
+            
+            .rankings-table tbody tr {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 1rem;
+                margin-bottom: 0.75rem;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 0.5rem;
+                gap: 0.75rem;
+            }
+            
+            .rankings-table tbody td {
+                display: inline-flex;
+                align-items: center;
+                padding: 0 !important;
+                border: none !important;
+            }
+            
+            .rankings-table tbody td:before {
+                display: none;
+            }
+            
+            /* Adjust spacing for single line */
+            .rankings-table tbody td:nth-child(1) {
+                flex: 0 0 auto;
+                margin-right: 0.5rem;
+            }
+            
+            .rankings-table tbody td:nth-child(2) {
+                flex: 1;
+                min-width: 0;
+                margin-right: 0.5rem;
+            }
+            
+            .rankings-table tbody td:nth-child(3) {
+                flex: 0 0 auto;
+            }
+            
+            /* Hide columns on mobile */
+            .hide-mobile {
+                display: none !important;
+            }
+            
+            /* Smaller profile pic in rankings */
+            .rankings-table tbody td img {
+                width: 40px;
+                height: 40px;
+                margin-right: 0.75rem;
+            }
+            
+            /* Smaller rank badge */
+            .rankings-table tbody td:nth-child(1) span {
+                font-size: 0.875rem;
+            }
+            
+            .rankings-table tbody td:nth-child(1) .flex {
+                gap: 0.25rem;
+            }
+            
+            .rankings-table tbody td:nth-child(1) i {
+                font-size: 1rem;
+            }
+            
+            /* Smaller points */
+            .rankings-table tbody td:nth-child(3) .text-2xl {
+                font-size: 1.25rem;
+                font-weight: bold;
+            }
+            
+            /* Hide email and adjust name */
+            .rankings-table .text-sm {
+                display: none;
+            }
+            
+            .rankings-table tbody td:nth-child(2) > div {
+                gap: 0.75rem;
+            }
+            
+            .rankings-table tbody td:nth-child(2) > div > div {
+                min-width: 0;
+                gap: 0.5rem;
+            }
+            
+            .rankings-table tbody td:nth-child(2) .font-semibold {
+                font-size: 0.875rem;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            
+            /* Adjust gender badges on mobile */
+            .gender-badge-male,
+            .gender-badge-female {
+                font-size: 0.625rem;
+                padding: 2px 6px;
+                white-space: nowrap;
+            }
+            
+            .gender-badge-male i,
+            .gender-badge-female i {
+                display: none;
             }
         }
         
@@ -336,6 +643,129 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
+        }
+        
+        /* Ensure proper vertical alignment in table */
+        .rankings-table tbody tr {
+            vertical-align: middle;
+        }
+        
+        .rankings-table tbody td {
+            vertical-align: middle;
+        }
+        
+        /* Modal Styles */
+        .name-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .name-modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(20, 20, 20, 0.95) 100%);
+            border: 2px solid rgba(245, 158, 11, 0.5);
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        
+        .modal-close:hover {
+            opacity: 1;
+        }
+        
+        .modal-trophy {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .modal-rank {
+            font-size: 1rem;
+            color: #9ca3af;
+            margin-bottom: 0.5rem;
+        }
+        
+        .modal-name {
+            font-size: 1.75rem;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+        
+        .modal-stat {
+            text-align: center;
+        }
+        
+        .modal-stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #f59e0b;
+        }
+        
+        .modal-stat-label {
+            font-size: 0.875rem;
+            color: #9ca3af;
+        }
+        
+        /* Name display control */
+        .name-initials {
+            display: none;
+        }
+        
+        .name-full {
+            display: inline;
+        }
+        
+        /* Disable click on desktop */
+        .podium-platform {
+            cursor: default;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -406,14 +836,14 @@
             </h2>
             
             <div class="overflow-x-auto">
-                <table class="w-full">
+                <table class="w-full rankings-table">
                     <thead>
                         <tr class="border-b border-gray-700">
-                            <th class="text-left text-gray-400 font-semibold py-4 px-4">Rank</th>
-                            <th class="text-left text-gray-400 font-semibold py-4 px-4">Promoter</th>
-                            <th class="text-left text-gray-400 font-semibold py-4 px-4">Total Points</th>
-                            <th class="text-left text-gray-400 font-semibold py-4 px-4">Approved Posts</th>
-                            <th class="text-left text-gray-400 font-semibold py-4 px-4">Avg Points/Post</th>
+                            <th class="text-left text-gray-400 font-semibold py-4 px-6">Rank</th>
+                            <th class="text-left text-gray-400 font-semibold py-4 px-6">Promoter</th>
+                            <th class="text-left text-gray-400 font-semibold py-4 px-6">Total Points</th>
+                            <th class="text-left text-gray-400 font-semibold py-4 px-6 hide-mobile">Approved Posts</th>
+                            <th class="text-left text-gray-400 font-semibold py-4 px-6 hide-mobile">Avg Points/Post</th>
                         </tr>
                     </thead>
                     <tbody id="rankingsTableBody">
@@ -430,6 +860,28 @@
         </div>
     </div>
 
+    <!-- Name Modal -->
+    <div id="nameModal" class="name-modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeNameModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div id="modalTrophy" class="modal-trophy"></div>
+            <div id="modalRank" class="modal-rank"></div>
+            <div id="modalName" class="modal-name"></div>
+            <div class="modal-stats">
+                <div class="modal-stat">
+                    <div id="modalPoints" class="modal-stat-value"></div>
+                    <div class="modal-stat-label">Points</div>
+                </div>
+                <div class="modal-stat">
+                    <div id="modalPosts" class="modal-stat-value"></div>
+                    <div class="modal-stat-label">Posts</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase and App Scripts -->
     <script type="module" src="firebase-config.js"></script>
     <script type="module" src="rankings.js"></script>
@@ -438,6 +890,25 @@
             const navLinks = document.querySelector('.nav-links');
             navLinks.classList.toggle('active');
         }
+        
+        function closeNameModal() {
+            document.getElementById('nameModal').classList.remove('active');
+        }
+        
+        // Close modal when clicking outside
+        document.addEventListener('click', (e) => {
+            const modal = document.getElementById('nameModal');
+            if (e.target === modal) {
+                closeNameModal();
+            }
+        });
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeNameModal();
+            }
+        });
     </script>
 </body>
 </html>

@@ -181,6 +181,132 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
+        
+        /* Mobile Stats Dashboard */
+        @media (max-width: 768px) {
+            .stats-grid {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                grid-template-rows: auto auto !important;
+                gap: 0.5rem !important;
+            }
+            
+            /* Reorder cards for mobile layout */
+            .stats-grid > div:nth-child(1) {
+                order: 1; /* Total Points - top left */
+                grid-column: 1;
+                grid-row: 1;
+            }
+            
+            .stats-grid > div:nth-child(2) {
+                order: 2; /* Current Streak - top right */
+                grid-column: 2;
+                grid-row: 1;
+            }
+            
+            .stats-grid > div:nth-child(3) {
+                order: 3; /* Approved Posts - bottom left */
+                grid-column: 1;
+                grid-row: 2;
+            }
+            
+            .stats-grid > div:nth-child(4) {
+                order: 4; /* Pending Review - bottom right */
+                grid-column: 2;
+                grid-row: 2;
+            }
+            
+            .stat-card {
+                --card-width: 220px;
+                --card-height: 150px;
+                padding: 1rem !important;
+                width: var(--card-width);
+                height: var(--card-height);
+                min-height: var(--card-height);
+                max-height: var(--card-height);
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: center;
+                align-items: center;
+                border-radius: 1rem !important;
+                position: relative !important;
+                overflow: hidden !important;
+            }
+            
+            .stat-card > div {
+                flex-direction: column !important;
+                align-items: center !important;
+                text-align: center !important;
+                gap: 0.25rem !important;
+                width: 100%;
+                position: relative;
+                z-index: 10;
+            }
+            
+            .stat-card .text-sm {
+                font-size: 0.7rem;
+                margin-bottom: 0.25rem !important;
+                font-weight: 600;
+                letter-spacing: 0.5px;
+                text-align: center;
+            }
+            
+            .stat-card .text-5xl {
+                font-size: 2.75rem !important;
+                line-height: 1 !important;
+                margin: 0.25rem 0 !important;
+                font-weight: 800;
+                text-align: center;
+            }
+            
+            .stat-card .bg-amber-500\/20,
+            .stat-card .bg-green-500\/20,
+            .stat-card .bg-yellow-500\/20 {
+                padding: 0.5rem !important;
+                border-radius: 0.75rem;
+                margin-top: 0.25rem;
+                position: relative;
+                z-index: 10;
+            }
+            
+            .stat-card .bg-amber-500\/20 i,
+            .stat-card .bg-green-500\/20 i,
+            .stat-card .bg-yellow-500\/20 i {
+                font-size: 1.25rem !important;
+            }
+            
+            .stat-card .text-gray-500 {
+                display: none;
+            }
+            
+            /* Streak specific mobile */
+            .stat-card.relative > div:first-child {
+                flex-direction: column !important;
+                align-items: center !important;
+            }
+            
+            .stat-card .flex.items-center.gap-3 {
+                flex-direction: column !important;
+                gap: 0.25rem !important;
+                align-items: center !important;
+                justify-content: center;
+                margin: 0;
+            }
+            
+            .streak-flame {
+                margin: 0;
+                position: relative;
+                z-index: 10;
+            }
+            
+            .streak-flame i {
+                font-size: 2.75rem !important;
+            }
+            
+            .stat-card .absolute.text-8xl {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body class="text-white">
@@ -205,14 +331,10 @@
                     </a>
                     <span class="text-white font-bold text-xl hidden sm:inline">Promoter Dashboard</span>
                 </div>
-                
-                <button class="mobile-menu-btn text-white text-2xl md:hidden" onclick="toggleMobileMenu()">
-                    <i class="fas fa-bars"></i>
-                </button>
-                
+
                 <div class="nav-links flex items-center gap-6">
-                    <a href="user-profile.html" class="text-gray-400 hover:text-white transition">
-                        <i class="fas fa-user-circle mr-2"></i><span class="hidden sm:inline">User Profile</span>
+                    <a href="user-profile.html" class="text-gray-400 hover:text-white transition text-base">
+                        <i class="fas fa-user-circle mr-2 text-lg"></i><span class="hidden sm:inline">User Profile</span>
                     </a>
                     <a href="promoter-rankings.html" class="text-gray-400 hover:text-white transition">
                         <i class="fas fa-trophy mr-2"></i><span class="hidden sm:inline">Promoter Rankings</span>
@@ -251,7 +373,7 @@
         </div>
         
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 stats-grid">
             <!-- Total Points -->
             <div class="stat-card rounded-xl p-6">
                 <div class="flex items-start justify-between">
@@ -325,36 +447,39 @@
             </div>
             
             <div class="flex items-center gap-3 mb-6">
-                <div class="bg-amber-500 p-3 rounded-lg">
-                    <i class="fas fa-link text-black text-xl"></i>
+                <div class="bg-amber-500 p-2.5 rounded-lg">
+                    <i class="fas fa-link text-black text-lg"></i>
                 </div>
                 <div>
-                    <h2 class="text-2xl font-bold">Submit Your Post</h2>
-                    <p class="text-gray-400">Share your Pastry Vapors content and earn points</p>
+                    <h2 class="text-xl font-bold">Submit Your Post</h2>
+                    <p class="text-gray-400 text-sm">Share your Pastry Vapors content and earn points</p>
                 </div>
             </div>
 
-            <form id="submitPostForm" class="space-y-6">
+            <form id="submitPostForm" class="space-y-4">
                 <!-- Platform Selection -->
                 <div>
-                    <label class="text-sm text-gray-400 block mb-3">Platform</label>
-                    <div class="grid grid-cols-2 gap-4">
+                    <label class="text-xs text-gray-400 block mb-2 font-semibold">Platform</label>
+                    <div class="grid grid-cols-2 gap-3">
                         <button 
                             type="button" 
-                            class="platform-btn bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-lg font-semibold transition flex items-center justify-center gap-2"
+                            class="platform-btn bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2 text-sm"
                             data-platform="facebook"
                         >
-                            <i class="fab fa-facebook-f"></i>
+                            <i class="fab fa-facebook-f text-base"></i>
                             Facebook
                         </button>
                         <button 
                             type="button" 
-                            class="platform-btn bg-black/50 border border-gray-600 text-gray-600 py-4 rounded-lg font-semibold transition flex items-center justify-center gap-2 opacity-50 cursor-not-allowed"
+                            class="platform-btn bg-black/50 border border-gray-600 text-gray-600 py-3 rounded-lg font-semibold transition flex flex-col items-center justify-center gap-1 opacity-50 cursor-not-allowed text-sm"
                             data-platform="instagram"
                             disabled
                         >
-                            <i class="fab fa-instagram"></i>
-                            Instagram (Coming Soon)
+                            <i class="fab fa-instagram text-base"></i>
+                            <div class="flex flex-col items-center">
+                                <span>Instagram</span>
+                                <span class="text-xs">(Coming Soon)</span>
+                            </div>
                         </button>
                     </div>
                     <input type="hidden" id="selectedPlatform" value="facebook" required>
@@ -362,43 +487,43 @@
 
                 <!-- Task Type Selection -->
                 <div>
-                    <label class="text-sm text-gray-400 block mb-3">Task Type</label>
-                    <div class="grid grid-cols-2 gap-4">
+                    <label class="text-xs text-gray-400 block mb-2 font-semibold">Task Type</label>
+                    <div class="grid grid-cols-2 gap-3">
                         <button 
                             type="button" 
-                            class="task-type-btn bg-amber-500 hover:bg-amber-600 text-black py-4 rounded-lg font-semibold transition flex items-center justify-center gap-2"
+                            class="task-type-btn bg-amber-500 hover:bg-amber-600 text-black py-3 rounded-lg font-semibold transition flex flex-col items-center justify-center gap-1 text-xs"
                             data-task="hand-check"
                             data-points="15"
                         >
-                            <i class="fas fa-hand-point-up"></i>
-                            Hand-check (15 pts)
+                            <i class="fas fa-hand-point-up text-base"></i>
+                            <span>Hand-check (15 pts)</span>
                         </button>
                         <button 
                             type="button" 
-                            class="task-type-btn bg-black/50 border border-gray-600 hover:border-amber-500 text-gray-400 py-4 rounded-lg font-semibold transition flex items-center justify-center gap-2"
+                            class="task-type-btn bg-black/50 border border-gray-600 hover:border-amber-500 text-gray-400 py-3 rounded-lg font-semibold transition flex flex-col items-center justify-center gap-1 text-xs"
                             data-task="video-content"
                             data-points="25"
                         >
-                            <i class="fas fa-video"></i>
-                            Video Content (25 pts)
+                            <i class="fas fa-video text-base"></i>
+                            <span>Video Content (25 pts)</span>
                         </button>
                         <button 
                             type="button" 
-                            class="task-type-btn bg-black/50 border border-gray-600 hover:border-amber-500 text-gray-400 py-4 rounded-lg font-semibold transition flex items-center justify-center gap-2"
+                            class="task-type-btn bg-black/50 border border-gray-600 hover:border-amber-500 text-gray-400 py-3 rounded-lg font-semibold transition flex flex-col items-center justify-center gap-1 text-xs"
                             data-task="group-share"
                             data-points="1"
                         >
-                            <i class="fas fa-share-nodes"></i>
-                            Group Share (1 pt/pic)
+                            <i class="fas fa-share-nodes text-base"></i>
+                            <span>Group Share (1 pt/pic)</span>
                         </button>
                         <button 
                             type="button" 
-                            class="task-type-btn bg-black/50 border border-gray-600 hover:border-amber-500 text-gray-400 py-4 rounded-lg font-semibold transition flex items-center justify-center gap-2"
+                            class="task-type-btn bg-black/50 border border-gray-600 hover:border-amber-500 text-gray-400 py-3 rounded-lg font-semibold transition flex flex-col items-center justify-center gap-1 text-xs"
                             data-task="hype-comment"
                             data-points="1"
                         >
-                            <i class="fas fa-comment"></i>
-                            Hype Comment (1 pt/pic)
+                            <i class="fas fa-comment text-base"></i>
+                            <span>Hype Comment (1 pt/pic)</span>
                         </button>
                     </div>
                     <input type="hidden" id="selectedTaskType" value="hand-check" required>
@@ -407,20 +532,20 @@
 
                 <!-- Post URL -->
                 <div id="postUrlSection">
-                    <label class="text-sm text-gray-400 block mb-3">Post URL <span class="text-amber-500">*</span></label>
+                    <label class="text-xs text-gray-400 block mb-2 font-semibold">Post URL <span class="text-amber-500">*</span></label>
                     <input 
                         type="url" 
                         id="postUrlInput"
                         placeholder="https://facebook.com/..." 
-                        class="w-full bg-black/30 border border-gray-600 rounded-lg px-4 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+                        class="w-full bg-black/30 border border-gray-600 rounded-lg px-4 py-3 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-amber-500"
                         required
                     >
                 </div>
 
                 <!-- Screenshots Upload -->
                 <div id="screenshotsSection" style="display: none;">
-                    <label class="text-sm text-gray-400 block mb-3">Upload Screenshots (Max 10) <span class="text-amber-500">*</span></label>
-                    <div class="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-amber-500 transition cursor-pointer" id="screenshotDropZone">
+                    <label class="text-xs text-gray-400 block mb-2 font-semibold">Upload Screenshots (Max 10) <span class="text-amber-500">*</span></label>
+                    <div class="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center hover:border-amber-500 transition cursor-pointer" id="screenshotDropZone">
                         <input 
                             type="file" 
                             id="screenshotInput"
@@ -428,20 +553,20 @@
                             multiple
                             class="hidden"
                         >
-                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-500 mb-3"></i>
-                        <p class="text-gray-400 mb-2">Click to upload or drag and drop</p>
-                        <p class="text-gray-500 text-sm">PNG, JPG, GIF up to 10 images</p>
+                        <i class="fas fa-cloud-upload-alt text-3xl text-gray-500 mb-2"></i>
+                        <p class="text-gray-400 text-sm mb-1">Click to upload or drag and drop</p>
+                        <p class="text-gray-500 text-xs">PNG, JPG, GIF up to 10 images</p>
                     </div>
-                    <div id="screenshotPreview" class="grid grid-cols-5 gap-3 mt-4"></div>
-                    <p class="text-gray-500 text-sm mt-2" id="screenshotCount">0/10 screenshots</p>
+                    <div id="screenshotPreview" class="grid grid-cols-5 gap-2 mt-3"></div>
+                    <p class="text-gray-500 text-xs mt-2" id="screenshotCount">0/10 screenshots</p>
                 </div>
 
                 <!-- Submit Button -->
                 <button 
                     type="submit" 
-                    class="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold py-4 rounded-lg transition flex items-center justify-center gap-2"
+                    class="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold py-3 rounded-lg transition flex items-center justify-center gap-2 text-sm"
                 >
-                    <i class="fas fa-paper-plane"></i>
+                    <i class="fas fa-paper-plane text-sm"></i>
                     Submit Post
                 </button>
             </form>

@@ -39,6 +39,23 @@ async function loadUserProfile() {
             document.getElementById('address').value = userData.address || '';
             document.getElementById('contactNumber').value = userData.contactNumber || '';
             
+            // Make birthdate read-only if it's already set
+            const birthdateInput = document.getElementById('birthdate');
+            if (userData.birthdate) {
+                birthdateInput.disabled = true;
+                birthdateInput.classList.add('opacity-50', 'cursor-not-allowed');
+                
+                // Add a note below the birthdate field if it doesn't exist
+                let birthdateNote = document.getElementById('birthdateNote');
+                if (!birthdateNote) {
+                    birthdateNote = document.createElement('p');
+                    birthdateNote.id = 'birthdateNote';
+                    birthdateNote.className = 'text-xs text-amber-500 mt-1';
+                    birthdateNote.innerHTML = '<i class="fas fa-lock mr-1"></i>Birthday cannot be changed once set';
+                    birthdateInput.parentElement.appendChild(birthdateNote);
+                }
+            }
+            
             // Populate gender
             if (userData.gender) {
                 document.getElementById('selectedGender').value = userData.gender;
@@ -321,15 +338,23 @@ document.getElementById('profileForm').addEventListener('submit', async (e) => {
         
         showLoadingOverlay('Saving profile changes...');
         
+        // Get current user data to check if birthdate exists
+        const currentUserDoc = await getDoc(doc(db, 'users', currentUser.uid));
+        const currentData = currentUserDoc.data();
+        
         // Prepare update data (excluding name, email, and gender - gender is permanent)
         const updateData = {
-            birthdate: birthdate,
             address: address,
             contactNumber: contactNumber,
             primaryFbLink: primaryFbLink,
             promoterFbLink: promoterFbLink,
             updatedAt: new Date().toISOString()
         };
+        
+        // Only add birthdate if it's not already set (birthdate is permanent)
+        if (!currentData.birthdate) {
+            updateData.birthdate = birthdate;
+        }
         
         // Add profile picture if uploaded
         if (uploadedImageUrl) {

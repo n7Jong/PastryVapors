@@ -317,6 +317,38 @@ function hideLoadingOverlay() {
 }
 
 // Check user suspension status
+// Check if user profile is complete
+function isProfileComplete(userData) {
+    if (!userData) return false;
+    
+    const requiredFields = [
+        'firstName',
+        'lastName',
+        'email',
+        'birthdate',
+        'address',
+        'contactNumber',
+        'gender',
+        'primaryFbLink',
+        'profilePicture'
+    ];
+    
+    for (const field of requiredFields) {
+        if (!userData[field] || userData[field].trim() === '') {
+            return false;
+        }
+    }
+    
+    // Check if profile picture is not a placeholder
+    if (userData.profilePicture && 
+        (userData.profilePicture.includes('placeholder') || 
+         userData.profilePicture.includes('ui-avatars.com'))) {
+        return false;
+    }
+    
+    return true;
+}
+
 async function checkUserStatus() {
     try {
         const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
@@ -447,6 +479,12 @@ if (submitPostForm) {
         // Check if user is suspended
         if (currentUserData?.suspended) {
             alert('You are currently suspended and cannot submit posts.');
+            return;
+        }
+        
+        // Check if profile is complete
+        if (!isProfileComplete(currentUserData)) {
+            alert('Please complete your profile before submitting tasks. Go to your User Profile and fill in all required fields including profile picture.');
             return;
         }
         

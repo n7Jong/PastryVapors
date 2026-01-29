@@ -102,7 +102,7 @@ async function loadAdminData() {
         if (tbody) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="6" class="py-8 text-center text-red-500">
+                    <td colspan="7" class="py-8 text-center text-red-500">
                         <i class="fas fa-exclamation-circle text-3xl mb-3"></i>
                         <p>Error loading submissions: ${error.message}</p>
                         <p class="text-sm mt-2">Check console for details</p>
@@ -147,7 +147,7 @@ function updatePostsTable(posts) {
         console.log('📋 No posts to display');
         tbody.innerHTML = `
             <tr>
-                <td colspan="6" class="py-8 text-center text-gray-500">
+                <td colspan="7" class="py-8 text-center text-gray-500">
                     No submissions to review yet.
                 </td>
             </tr>
@@ -240,6 +240,11 @@ function updatePostsTable(posts) {
                         </span>
                     `}
                 </td>
+                <td class="py-4 px-4">
+                    <button class="view-details-btn bg-amber-500 hover:bg-amber-600 text-black px-4 py-2 rounded-lg text-sm font-semibold transition" data-post-id="${post.id}">
+                        <i class="fas fa-eye mr-1"></i>View
+                    </button>
+                </td>
             </tr>
         `;
     }).join('');
@@ -258,7 +263,7 @@ function updatePostsTable(posts) {
         console.error('Error stack:', error.stack);
         tbody.innerHTML = `
             <tr>
-                <td colspan="6" class="py-8 text-center text-red-500">
+                <td colspan="7" class="py-8 text-center text-red-500">
                     Error displaying posts: ${error.message}
                 </td>
             </tr>
@@ -296,10 +301,12 @@ function attachActionButtons() {
     const approveBtns = document.querySelectorAll('.approve-btn');
     const rejectBtns = document.querySelectorAll('.reject-btn');
     const screenshotBtns = document.querySelectorAll('.view-screenshots-btn');
+    const viewDetailsBtns = document.querySelectorAll('.view-details-btn');
     
     console.log('Found approve buttons:', approveBtns.length);
     console.log('Found reject buttons:', rejectBtns.length);
     console.log('Found screenshot buttons:', screenshotBtns.length);
+    console.log('Found view details buttons:', viewDetailsBtns.length);
     
     approveBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -328,6 +335,16 @@ function attachActionButtons() {
             const postId = e.currentTarget.dataset.postId;
             console.log('📷 View screenshots clicked for post:', postId);
             showScreenshotModal(postId);
+        });
+    });
+    
+    viewDetailsBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const postId = e.currentTarget.dataset.postId;
+            console.log('👁️ View details clicked for post:', postId);
+            showSubmissionDetailsModal(postId);
         });
     });
 }
@@ -383,6 +400,105 @@ document.getElementById('nextScreenshot')?.addEventListener('click', () => {
         updateScreenshotDisplay();
     }
 });
+
+// Submission Details Modal
+function showSubmissionDetailsModal(postId) {
+    const post = allPosts.find(p => p.id === postId);
+    if (!post) return;
+    
+    // Format date
+    const date = post.createdAt ? 
+        (post.createdAt.toDate ? post.createdAt.toDate().toLocaleDateString() : post.createdAt) :
+        new Date().toLocaleDateString();
+    
+    // Get user name
+    const userName = post.userName || (post.userEmail ? post.userEmail.split('@')[0] : 'Unknown User');
+    
+    // Platform display
+    const platformColor = post.platform === 'facebook' ? 'blue' : 'pink';
+    const platformIcon = post.platform === 'facebook' ? 'facebook-f' : 'instagram';
+    const platformHTML = `
+        <div class="inline-flex items-center gap-2 bg-gray-800 px-3 py-1 rounded-lg">
+            <i class="fab fa-${platformIcon} text-${platformColor}-500"></i>
+            <span class="text-white capitalize">${post.platform}</span>
+        </div>
+    `;
+    
+    // Status display
+    const statusInfo = getStatusInfo(post.status);
+    const statusHTML = `
+        <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold bg-${statusInfo.color}-500/20 text-${statusInfo.color}-400">
+            <i class="${statusInfo.icon} mr-1"></i>${statusInfo.text}
+        </span>
+    `;
+    
+    // Actions HTML
+    let actionsHTML = '';
+    if (post.status === 'pending') {
+        actionsHTML = `
+            <button class="approve-btn-modal bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition" data-post-id="${post.id}">
+                <i class="fas fa-check mr-1"></i>Approve
+            </button>
+            <button class="reject-btn-modal bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition" data-post-id="${post.id}">
+                <i class="fas fa-times mr-1"></i>Reject
+            </button>
+        `;
+    } else {
+        actionsHTML = `
+            <span class="text-gray-400 text-sm">
+                ${post.status === 'approved' ? '✓ Approved (+' + (post.points || 150) + ' points)' : '✗ Rejected'}
+            </span>
+        `;
+    }
+    
+    // Populate modal
+    document.getElementById('detailDate').textContent = date;
+    document.getElementById('detailPromoter').textContent = userName;
+    document.getElementById('detailPlatform').innerHTML = platformHTML;
+    document.getElementById('detailPostUrl').href = post.postUrl;
+    document.getElementById('detailPostUrl').textContent = post.postUrl;
+    document.getElementById('detailStatus').innerHTML = statusHTML;
+    document.getElementById('detailActions').innerHTML = actionsHTML;
+    
+    // Handle screenshots button
+    const viewScreenshotsBtn = document.getElementById('viewScreenshotsBtn');
+    if (post.screenshots && post.screenshots.length > 0) {
+        viewScreenshotsBtn.style.display = 'inline-block';
+        viewScreenshotsBtn.onclick = () => {
+            document.getElementById('submissionDetailsModal').classList.add('hidden');
+            showScreenshotModal(postId);
+        };
+    } else {
+        viewScreenshotsBtn.style.display = 'none';
+    }
+    
+    // Show modal
+    document.getElementById('submissionDetailsModal').classList.remove('hidden');
+    
+    // Attach event listeners to modal action buttons
+    const approveBtnModal = document.querySelector('.approve-btn-modal');
+    const rejectBtnModal = document.querySelector('.reject-btn-modal');
+    
+    if (approveBtnModal) {
+        approveBtnModal.addEventListener('click', () => {
+            document.getElementById('submissionDetailsModal').classList.add('hidden');
+            showApprovalModal(postId);
+        });
+    }
+    
+    if (rejectBtnModal) {
+        rejectBtnModal.addEventListener('click', () => {
+            document.getElementById('submissionDetailsModal').classList.add('hidden');
+            showRejectionModal(postId);
+        });
+    }
+}
+
+// Close submission details modal
+document.getElementById('closeSubmissionDetailsBtn')?.addEventListener('click', () => {
+    document.getElementById('submissionDetailsModal').classList.add('hidden');
+});
+
 
 // Keyboard navigation
 document.addEventListener('keydown', (e) => {

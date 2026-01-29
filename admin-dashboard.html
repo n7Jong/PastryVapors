@@ -163,6 +163,131 @@
                 transform: translateX(0) translateY(-1000px) rotate(0deg) scale(3);
             }
         }
+        
+        /* Mobile Stats Dashboard */
+        @media (max-width: 768px) {
+            .stats-grid {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                grid-template-rows: auto auto !important;
+                gap: 0.5rem !important;
+            }
+            
+            /* Reorder cards for mobile layout */
+            .stats-grid > div:nth-child(1) {
+                order: 1; /* Total Submissions - top left */
+                grid-column: 1;
+                grid-row: 1;
+            }
+            
+            .stats-grid > div:nth-child(2) {
+                order: 2; /* Pending Review - top right */
+                grid-column: 2;
+                grid-row: 1;
+            }
+            
+            .stats-grid > div:nth-child(3) {
+                order: 3; /* Approved - bottom left */
+                grid-column: 1;
+                grid-row: 2;
+            }
+            
+            .stats-grid > div:nth-child(4) {
+                order: 4; /* Rejected - bottom right */
+                grid-column: 2;
+                grid-row: 2;
+            }
+            
+            .stat-card {
+                --card-width: 220px;
+                --card-height: 150px;
+                padding: 1rem !important;
+                width: var(--card-width);
+                height: var(--card-height);
+                min-height: var(--card-height);
+                max-height: var(--card-height);
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: center;
+                align-items: center;
+                border-radius: 1rem !important;
+                position: relative !important;
+                overflow: hidden !important;
+            }
+            
+            .stat-card > div {
+                flex-direction: column !important;
+                align-items: center !important;
+                text-align: center !important;
+                gap: 0.25rem !important;
+                width: 100%;
+                position: relative;
+                z-index: 10;
+            }
+            
+            .stat-card .text-sm {
+                font-size: 0.7rem;
+                margin-bottom: 0.25rem !important;
+                font-weight: 600;
+                letter-spacing: 0.5px;
+                text-align: center;
+            }
+            
+            .stat-card .text-4xl {
+                font-size: 2.75rem !important;
+                line-height: 1 !important;
+                margin: 0.25rem 0 !important;
+                font-weight: 800;
+                text-align: center;
+            }
+            
+            .stat-card .bg-blue-500\/20,
+            .stat-card .bg-yellow-500\/20,
+            .stat-card .bg-green-500\/20,
+            .stat-card .bg-red-500\/20 {
+                padding: 0.5rem !important;
+                border-radius: 0.75rem;
+                margin-top: 0.25rem;
+                position: relative;
+                z-index: 10;
+            }
+            
+            .stat-card .bg-blue-500\/20 i,
+            .stat-card .bg-yellow-500\/20 i,
+            .stat-card .bg-green-500\/20 i,
+            .stat-card .bg-red-500\/20 i {
+                font-size: 1.25rem !important;
+            }
+        }
+        
+        /* Mobile Submissions Table */
+        @media (max-width: 768px) {
+            .submissions-table th:nth-child(3),
+            .submissions-table th:nth-child(4),
+            .submissions-table th:nth-child(5),
+            .submissions-table th:nth-child(6),
+            .submissions-table td:nth-child(3),
+            .submissions-table td:nth-child(4),
+            .submissions-table td:nth-child(5),
+            .submissions-table td:nth-child(6) {
+                display: none;
+            }
+            
+            .submissions-table th:last-child,
+            .submissions-table td:last-child {
+                display: table-cell !important;
+            }
+            
+            .submissions-table td {
+                padding: 0.75rem 0.5rem !important;
+                font-size: 0.875rem;
+            }
+            
+            .submissions-table th {
+                padding: 0.75rem 0.5rem !important;
+                font-size: 0.875rem;
+            }
+        }
     </style>
 </head>
 <body class="text-white">
@@ -192,10 +317,6 @@
                     </button>
                 </div>
                 
-                <button class="mobile-menu-btn text-white text-2xl md:hidden" onclick="toggleMobileMenu()">
-                    <i class="fas fa-bars"></i>
-                </button>
-                
                 <div class="nav-links flex items-center gap-6">
                     <button id="createAnnouncementBtn" class="text-gray-400 hover:text-white transition">
                         <i class="fas fa-bullhorn mr-2"></i><span class="hidden sm:inline">Announcement</span>
@@ -216,7 +337,7 @@
 
     <div class="container mx-auto px-4 py-8">
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="stats-grid grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <!-- Total Submissions -->
             <div class="stat-card rounded-xl p-6">
                 <div class="flex items-start justify-between">
@@ -293,7 +414,7 @@
             <h2 class="text-2xl font-bold mb-6">Promoter Submissions</h2>
             
             <div class="overflow-x-auto">
-                <table class="w-full">
+                <table class="w-full submissions-table">
                     <thead>
                         <tr class="border-b border-gray-700">
                             <th class="text-left text-gray-400 font-semibold py-4 px-4">Date</th>
@@ -302,6 +423,7 @@
                             <th class="text-left text-gray-400 font-semibold py-4 px-4">Post URL</th>
                             <th class="text-left text-gray-400 font-semibold py-4 px-4">Status</th>
                             <th class="text-left text-gray-400 font-semibold py-4 px-4">Actions</th>
+                            <th class="text-left text-gray-400 font-semibold py-4 px-4">View</th>
                         </tr>
                     </thead>
                     <tbody id="postsTableBody">
@@ -418,6 +540,72 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Submission Details Modal -->
+    <div id="submissionDetailsModal" class="modal hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div class="card rounded-2xl p-8 max-w-2xl w-full mx-4">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold flex items-center gap-2">
+                    <i class="fas fa-file-lines text-amber-500"></i>
+                    Submission Details
+                </h3>
+                <button id="closeSubmissionDetailsBtn" class="text-gray-400 hover:text-white text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <!-- Date -->
+                <div>
+                    <p class="text-gray-400 text-sm mb-1">Date Submitted</p>
+                    <p class="text-white font-semibold" id="detailDate">-</p>
+                </div>
+                
+                <!-- Promoter -->
+                <div>
+                    <p class="text-gray-400 text-sm mb-1">Promoter</p>
+                    <p class="text-white font-semibold" id="detailPromoter">-</p>
+                </div>
+                
+                <!-- Platform -->
+                <div>
+                    <p class="text-gray-400 text-sm mb-1">Platform</p>
+                    <div id="detailPlatform" class="inline-flex items-center gap-2 bg-gray-800 px-3 py-1 rounded-lg">
+                        <i class="fab fa-facebook text-blue-500"></i>
+                        <span class="text-white">-</span>
+                    </div>
+                </div>
+                
+                <!-- Post URL -->
+                <div>
+                    <p class="text-gray-400 text-sm mb-1">Post URL</p>
+                    <a id="detailPostUrl" href="#" target="_blank" class="text-amber-500 hover:text-amber-400 break-all">-</a>
+                </div>
+                
+                <!-- Status -->
+                <div id="detailStatusContainer">
+                    <p class="text-gray-400 text-sm mb-1">Status</p>
+                    <div id="detailStatus"></div>
+                </div>
+                
+                <!-- Screenshots -->
+                <div>
+                    <p class="text-gray-400 text-sm mb-2">Screenshots</p>
+                    <button id="viewScreenshotsBtn" class="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-images mr-2"></i>View Screenshots
+                    </button>
+                </div>
+                
+                <!-- Actions -->
+                <div class="border-t border-gray-700 pt-4 mt-6">
+                    <p class="text-gray-400 text-sm mb-3">Actions</p>
+                    <div id="detailActions" class="flex gap-3 flex-wrap">
+                        <!-- Action buttons will be inserted here -->
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
