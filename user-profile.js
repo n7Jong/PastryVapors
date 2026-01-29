@@ -242,11 +242,10 @@ document.getElementById('profileForm').addEventListener('submit', async (e) => {
         saveBtn.disabled = true;
         saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
         
-        // Get form values (only editable fields)
+        // Get form values (only editable fields - gender is read-only)
         const birthdate = document.getElementById('birthdate').value;
         const address = document.getElementById('address').value;
         const contactNumber = document.getElementById('contactNumber').value;
-        const gender = document.getElementById('selectedGender').value;
         const primaryFbLink = document.getElementById('primaryFbLink').value.trim();
         const promoterFbLink = document.getElementById('promoterFbLink').value.trim();
         
@@ -322,12 +321,11 @@ document.getElementById('profileForm').addEventListener('submit', async (e) => {
         
         showLoadingOverlay('Saving profile changes...');
         
-        // Prepare update data (excluding name and email)
+        // Prepare update data (excluding name, email, and gender - gender is permanent)
         const updateData = {
             birthdate: birthdate,
             address: address,
             contactNumber: contactNumber,
-            gender: gender,
             primaryFbLink: primaryFbLink,
             promoterFbLink: promoterFbLink,
             updatedAt: new Date().toISOString()
