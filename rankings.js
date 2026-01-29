@@ -1,4 +1,4 @@
-import { auth, db } from './firebase-config.js';
+import { auth, db, where } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { collection, query, getDocs } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
@@ -17,24 +17,30 @@ onAuthStateChanged(auth, async (user) => {
 // Load promoter rankings
 async function loadRankings() {
     try {
-        // Query all users from Firestore
-        const q = query(collection(db, 'users'));
+        // Query Firebase users collection - ONLY get promoters (isAdmin = false)
+        const q = query(
+            collection(db, 'users'),
+            where('isAdmin', '==', false)
+        );
         
         const querySnapshot = await getDocs(q);
         const promoters = [];
         
+        console.log('📊 Total promoters from Firebase:', querySnapshot.size);
+        
         querySnapshot.forEach((doc) => {
             const data = doc.data();
-            // Filter promoters only (isAdmin = false) and sort in JavaScript
-            if (data.isAdmin === false) {
-                promoters.push({
-                    id: doc.id,
-                    ...data,
-                    points: data.points || 0,
-                    totalApprovedPosts: data.totalApprovedPosts || 0
-                });
-            }
+            console.log(`✓ Promoter: ${data.fullName || data.email}, Points: ${data.points || 0}, isAdmin: ${data.isAdmin}`);
+            
+            promoters.push({
+                id: doc.id,
+                ...data,
+                points: data.points || 0,
+                totalApprovedPosts: data.totalApprovedPosts || 0
+            });
         });
+        
+        console.log('✅ Total promoters loaded:', promoters.length);
 
         // Sort by points descending
         promoters.sort((a, b) => b.points - a.points);
@@ -170,9 +176,9 @@ function displayRankingsTable(promoters) {
         const genderClass = promoter.gender === 'male' ? 'gender-male' : 
                              promoter.gender === 'female' ? 'gender-female' : '';
         const genderBadge = promoter.gender === 'male' ? 
-            '<span class="gender-badge-male"><i class="fas fa-mars"></i> Male</span>' :
+            '<span class="gender-badge-male"><i class="fas fa-crown"></i> Kings</span>' :
             promoter.gender === 'female' ? 
-            '<span class="gender-badge-female"><i class="fas fa-venus"></i> Female</span>' : '';
+            '<span class="gender-badge-female"><i class="fas fa-crown"></i> Queens</span>' : '';
         
         // Debug logging
         if (index < 5) {

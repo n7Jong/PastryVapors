@@ -639,6 +639,9 @@ async function loadPromoterData() {
         // Recalculate streak after loading data
         await calculateStreak();
         
+        // Show daily reminder after user data is loaded
+        showDailyReminder();
+        
     } catch (error) {
         console.error('Error loading data:', error);
     }
@@ -963,5 +966,83 @@ function updateStreakDisplay(days) {
     } else {
         streakMessage.textContent = `Legendary streak! 👑`;
         streakIcon.style.opacity = '1';
+    }
+}
+
+// Daily Reminder System
+function showDailyReminder() {
+    if (!currentUserData) return;
+    
+    const dayOfWeek = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const userGender = currentUserData.gender;
+    
+    const reminderBanner = document.getElementById('dailyReminderBanner');
+    const reminderTitle = document.getElementById('reminderTitle');
+    const reminderMessage = document.getElementById('reminderMessage');
+    const reminderIcon = document.getElementById('reminderIcon');
+    const submitDisabledOverlay = document.getElementById('submitDisabledOverlay');
+    const disabledTitle = document.getElementById('disabledTitle');
+    const disabledMessage = document.getElementById('disabledMessage');
+    const yourSchedule = document.getElementById('yourSchedule');
+    
+    // Monday = 1, Tuesday = 2, Wednesday = 3, Thursday = 4, Friday = 5, Saturday = 6, Sunday = 0
+    const queensDays = [1, 3, 5]; // Monday, Wednesday, Friday
+    const kingsDays = [2, 4, 6];  // Tuesday, Thursday, Saturday
+    
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const todayName = dayNames[dayOfWeek];
+    
+    let canPost = false;
+    let title = '';
+    let message = '';
+    let icon = '';
+    let schedule = '';
+    
+    if (userGender === 'female') {
+        schedule = 'Monday, Wednesday, Friday';
+        if (queensDays.includes(dayOfWeek)) {
+            canPost = true;
+            title = '👑 Queens Day - Post Now!';
+            message = `Today is ${todayName}! Submit your posts to maintain your streak and earn points.`;
+            icon = '♀️';
+        } else {
+            title = '🚫 Not a Queens Day';
+            message = `Today is ${todayName}. Come back on Monday, Wednesday, or Friday to post!`;
+            icon = '📅';
+        }
+    } else if (userGender === 'male') {
+        schedule = 'Tuesday, Thursday, Saturday';
+        if (kingsDays.includes(dayOfWeek)) {
+            canPost = true;
+            title = '👑 Kings Day - Post Now!';
+            message = `Today is ${todayName}! Submit your posts to maintain your streak and earn points.`;
+            icon = '♂️';
+        } else {
+            title = '🚫 Not a Kings Day';
+            message = `Today is ${todayName}. Come back on Tuesday, Thursday, or Saturday to post!`;
+            icon = '📅';
+        }
+    }
+    
+    // Update reminder banner
+    if (reminderBanner) {
+        reminderBanner.classList.remove('hidden');
+        if (reminderTitle) reminderTitle.textContent = title;
+        if (reminderMessage) reminderMessage.textContent = message;
+        if (reminderIcon) reminderIcon.textContent = icon;
+    }
+    
+    // Enable/disable submit form based on schedule
+    if (submitDisabledOverlay && disabledMessage && yourSchedule) {
+        if (!canPost) {
+            submitDisabledOverlay.classList.remove('hidden');
+            submitDisabledOverlay.classList.add('flex');
+            if (disabledTitle) disabledTitle.textContent = title;
+            disabledMessage.textContent = message;
+            yourSchedule.textContent = `Your Schedule: ${schedule}`;
+        } else {
+            submitDisabledOverlay.classList.add('hidden');
+            submitDisabledOverlay.classList.remove('flex');
+        }
     }
 }

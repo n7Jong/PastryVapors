@@ -1,6 +1,6 @@
-import { auth, db } from './firebase-config.js';
+import { auth, db, where } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { collection, query, where, getDocs, doc, updateDoc, deleteDoc, getDoc, increment } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { collection, query, getDocs, doc, updateDoc, deleteDoc, getDoc, increment } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 let allPromoters = [];
 let currentPromoter = null;
@@ -44,12 +44,12 @@ onAuthStateChanged(auth, async (user) => {
 // Load All Promoters
 async function loadPromoters() {
     try {
-        console.log('👥 Loading promoters...');
+        console.log('👥 Loading promoters from Firebase users collection...');
         const usersRef = collection(db, 'users');
         const q = query(usersRef, where('isAdmin', '==', false));
         const querySnapshot = await getDocs(q);
         
-        console.log('📝 Users with isAdmin=false found:', querySnapshot.size);
+        console.log('📝 Promoters from Firebase (isAdmin=false):', querySnapshot.size);
         
         allPromoters = [];
         
@@ -522,6 +522,20 @@ document.getElementById('confirmKickBtn').addEventListener('click', async () => 
         
         const deletePromises = postsSnapshot.docs.map(postDoc => deleteDoc(doc(db, 'posts', postDoc.id)));
         await Promise.all(deletePromises);
+        
+        // Delete notifications related to this promoter
+        const notificationsRef = collection(db, 'notifications');
+        const notificationsQuery = query(notificationsRef, where('userId', '==', currentPromoter));
+        const notificationsSnapshot = await getDocs(notificationsQuery);
+        const notificationPromises = notificationsSnapshot.docs.map(notifDoc => deleteDoc(doc(db, 'notifications', notifDoc.id)));
+        await Promise.all(notificationPromises);
+        
+        // Delete Google account if exists
+        try {
+            await deleteDoc(doc(db, 'googleAccounts', currentPromoter));
+        } catch (e) {
+            console.log('No Google account to delete or error:', e);
+        }
         
         // Delete the user
         await deleteDoc(doc(db, 'users', currentPromoter));

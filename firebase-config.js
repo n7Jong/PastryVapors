@@ -24,7 +24,31 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 // Export Firebase services
-export { auth, db, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signOut, onAuthStateChanged, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, orderBy, Timestamp, getDoc, setDoc, increment, onSnapshot };
+export { 
+    auth, 
+    db, 
+    signInWithEmailAndPassword, 
+    signInWithPopup, 
+    GoogleAuthProvider, 
+    createUserWithEmailAndPassword, 
+    signOut, 
+    onAuthStateChanged, 
+    collection, 
+    addDoc, 
+    getDocs, 
+    doc, 
+    updateDoc, 
+    deleteDoc, 
+    query, 
+    where, 
+    orderBy, 
+    Timestamp, 
+    getDoc, 
+    setDoc, 
+    increment, 
+    onSnapshot,
+    firebaseConfig
+};
 
 // Helper function to check if user is admin
 export async function isAdmin(userId) {

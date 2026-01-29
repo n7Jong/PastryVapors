@@ -801,16 +801,16 @@ document.getElementById('closePromotersBtn')?.addEventListener('click', () => {
 // Load all promoters
 async function loadPromoters() {
     try {
-        const usersQuery = query(collection(db, 'users'));
+        const usersQuery = query(collection(db, 'users'), where('isAdmin', '==', false));
         const querySnapshot = await getDocs(usersQuery);
         
         allPromoters = [];
         querySnapshot.forEach((doc) => {
             const data = doc.data();
-            if (data.isAdmin === false) {
-                allPromoters.push({ id: doc.id, ...data });
-            }
+            allPromoters.push({ id: doc.id, ...data });
         });
+        
+        console.log('✅ Loaded promoters:', allPromoters.length);
         
         displayPromoters();
     } catch (error) {
@@ -1026,14 +1026,36 @@ document.getElementById('cancelKickBtn')?.addEventListener('click', () => {
 
 document.getElementById('confirmKickBtn')?.addEventListener('click', async () => {
     try {
-        // Delete user document
-        await deleteDoc(doc(db, 'users', currentActionUserId));
+        // Delete all posts by this user from Firestore (not just from local array)
+        const postsQuery = query(collection(db, 'posts'), where('userId', '==', currentActionUserId));
+        const postsSnapshot = await getDocs(postsQuery);
         
-        // Delete all posts by this user
-        const userPosts = allPosts.filter(p => p.userId === currentActionUserId);
-        for (const post of userPosts) {
-            await deleteDoc(doc(db, 'posts', post.id));
+        const deletePromises = [];
+        postsSnapshot.forEach((postDoc) => {
+            deletePromises.push(deleteDoc(doc(db, 'posts', postDoc.id)));
+        });
+        
+        // Delete all posts
+        await Promise.all(deletePromises);
+        
+        // Delete notifications related to this user
+        const notificationsQuery = query(collection(db, 'notifications'), where('userId', '==', currentActionUserId));
+        const notificationsSnapshot = await getDocs(notificationsQuery);
+        const notificationPromises = [];
+        notificationsSnapshot.forEach((notifDoc) => {
+            notificationPromises.push(deleteDoc(doc(db, 'notifications', notifDoc.id)));
+        });
+        await Promise.all(notificationPromises);
+        
+        // Delete Google account if exists
+        try {
+            await deleteDoc(doc(db, 'googleAccounts', currentActionUserId));
+        } catch (e) {
+            console.log('No Google account to delete or error:', e);
         }
+        
+        // Finally, delete user document
+        await deleteDoc(doc(db, 'users', currentActionUserId));
         
         alert('Promoter permanently removed from system');
         document.getElementById('kickModal').classList.add('hidden');

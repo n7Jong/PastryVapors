@@ -200,17 +200,19 @@
 
         .podium-1 .podium-platform {
             border-color: #FFD700;
-            min-height: 320px;
+            min-height: 400px;
+            position: relative;
+            overflow: visible;
         }
 
         .podium-2 .podium-platform {
             border-color: #C0C0C0;
-            min-height: 260px;
+            min-height: 300px;
         }
 
         .podium-3 .podium-platform {
             border-color: #CD7F32;
-            min-height: 220px;
+            min-height: 240px;
         }
 
         .profile-avatar {
@@ -220,6 +222,46 @@
             object-fit: cover;
             border: 4px solid;
             margin: 0 auto 1rem;
+        }
+        
+        /* Glowing Effects for Podium Places */
+        .podium-1 {
+            animation: glowPulseGold 2s infinite ease-in-out;
+        }
+        
+        .podium-2 {
+            animation: glowPulseSilver 2s infinite ease-in-out;
+        }
+        
+        .podium-3 {
+            animation: glowPulseBronze 2s infinite ease-in-out;
+        }
+        
+        @keyframes glowPulseGold {
+            0%, 100% {
+                filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.4));
+            }
+            50% {
+                filter: drop-shadow(0 0 30px rgba(255, 215, 0, 0.7));
+            }
+        }
+        
+        @keyframes glowPulseSilver {
+            0%, 100% {
+                filter: drop-shadow(0 0 15px rgba(192, 192, 192, 0.4));
+            }
+            50% {
+                filter: drop-shadow(0 0 30px rgba(192, 192, 192, 0.7));
+            }
+        }
+        
+        @keyframes glowPulseBronze {
+            0%, 100% {
+                filter: drop-shadow(0 0 15px rgba(205, 127, 50, 0.4));
+            }
+            50% {
+                filter: drop-shadow(0 0 30px rgba(205, 127, 50, 0.7));
+            }
         }
         
         @media (max-width: 768px) {\n            .nav-links {
