@@ -156,6 +156,11 @@
             justify-content: center;
             font-size: 1.5rem;
             font-weight: 700;
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
         }
 
         .rank-1 {
@@ -207,7 +212,26 @@
             position: relative;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .podium-platform .profile-avatar {
+            order: 1;
+            margin-top: 1rem;
+        }
+        
+        .podium-platform h3 {
+            order: 2;
+        }
+        
+        .podium-platform .text-3xl {
+            order: 3;
+        }
+        
+        .podium-platform .text-sm {
+            order: 4;
         }
 
         .podium-1 .podium-platform {
@@ -291,6 +315,7 @@
         }
         
         @media (max-width: 768px) {
+            /* Mobile Navigation */
             .nav-links {
                 display: none;
             }
@@ -311,28 +336,60 @@
                 display: block;
             }
             
+            /* Mobile Page Header */
+            .container {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+            
+            .text-center h1 {
+                font-size: 1.5rem !important;
+                margin-bottom: 0.5rem !important;
+            }
+            
+            .text-center p {
+                font-size: 0.8rem !important;
+            }
+            
+            .text-center .bg-amber-500 {
+                padding: 0.65rem !important;
+            }
+            
+            .text-center .bg-amber-500 i {
+                font-size: 1.25rem !important;
+            }
+            
+            .text-center.mb-12 {
+                margin-bottom: 2rem !important;
+            }
+            
             /* Minimize podium for mobile */
             .podium {
-                gap: 12px !important;
+                gap: 6px !important;
                 display: flex !important;
                 justify-content: center !important;
                 align-items: flex-end !important;
                 width: 100% !important;
-                padding: 0 0.5rem !important;
+                padding: 0 0.25rem !important;
+                margin-bottom: 2rem !important;
+                flex-wrap: nowrap !important;
+                overflow: visible !important;
             }
             
             .podium-item {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
+                margin-top: 24px !important;
+                position: relative;
             }
             
             /* Podium 1 (Gold - Middle) - Equal Width, Tallest */
             .podium-1 {
-                width: 115px !important;
-                max-width: 115px !important;
-                min-width: 115px !important;
-                flex: 0 0 115px !important;
+                width: 110px !important;
+                max-width: 110px !important;
+                min-width: 110px !important;
+                flex: 0 0 110px !important;
                 flex-shrink: 0 !important;
                 flex-grow: 0 !important;
                 box-sizing: border-box !important;
@@ -342,10 +399,10 @@
             
             /* Podium 2 (Silver - Left) - Equal Width, Medium Height */
             .podium-2 {
-                width: 115px !important;
-                max-width: 115px !important;
-                min-width: 115px !important;
-                flex: 0 0 115px !important;
+                width: 110px !important;
+                max-width: 110px !important;
+                min-width: 110px !important;
+                flex: 0 0 110px !important;
                 flex-shrink: 0 !important;
                 flex-grow: 0 !important;
                 box-sizing: border-box !important;
@@ -355,10 +412,10 @@
             
             /* Podium 3 (Bronze - Right) - Equal Width, Shortest */
             .podium-3 {
-                width: 115px !important;
-                max-width: 115px !important;
-                min-width: 115px !important;
-                flex: 0 0 115px !important;
+                width: 110px !important;
+                max-width: 110px !important;
+                min-width: 110px !important;
+                flex: 0 0 110px !important;
                 flex-shrink: 0 !important;
                 flex-grow: 0 !important;
                 box-sizing: border-box !important;
@@ -369,72 +426,110 @@
             /* Platform 1 (Gold) - Tallest */
             .podium-1 .podium-platform {
                 width: 100% !important;
-                height: 280px !important;
-                min-height: 280px !important;
-                max-height: 280px !important;
-                padding: 16px 10px !important;
+                height: 260px !important;
+                min-height: 260px !important;
+                max-height: 260px !important;
+                padding: 24px 8px 12px 8px !important;
                 display: flex !important;
                 flex-direction: column !important;
-                justify-content: flex-end !important;
-                overflow: hidden !important;
+                justify-content: space-between !important;
+                overflow: visible !important;
                 box-sizing: border-box !important;
             }
             
             /* Platform 2 (Silver) - Medium Height */
             .podium-2 .podium-platform {
                 width: 100% !important;
-                height: 240px !important;
-                min-height: 240px !important;
-                max-height: 240px !important;
-                padding: 16px 10px !important;
+                height: 230px !important;
+                min-height: 230px !important;
+                max-height: 230px !important;
+                padding: 24px 8px 12px 8px !important;
                 display: flex !important;
                 flex-direction: column !important;
-                justify-content: flex-end !important;
-                overflow: hidden !important;
+                justify-content: space-between !important;
+                overflow: visible !important;
                 box-sizing: border-box !important;
             }
             
             /* Platform 3 (Bronze) - Shortest */
             .podium-3 .podium-platform {
                 width: 100% !important;
-                height: 230px !important;
-                min-height: 230px !important;
-                max-height: 230px !important;
-                padding: 16px 10px !important;
+                height: 210px !important;
+                min-height: 210px !important;
+                max-height: 210px !important;
+                padding: 24px 8px 12px 8px !important;
                 display: flex !important;
                 flex-direction: column !important;
-                justify-content: flex-end !important;
-                overflow: hidden !important;
+                justify-content: space-between !important;
+                overflow: visible !important;
                 box-sizing: border-box !important;
             }
             
             /* Equal rank badge sizes */
             .rank-badge {
-                width: 35px !important;
-                height: 35px !important;
-                font-size: 0.875rem !important;
+                width: 32px !important;
+                height: 32px !important;
+                font-size: 0.7rem !important;
                 flex-shrink: 0;
+                position: absolute !important;
+                top: -16px !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                z-index: 10 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                line-height: 1 !important;
+            }
+            
+            .rank-badge i {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
             }
             
             /* Equal profile avatar sizes */
-            .podium-1 .profile-avatar,
-            .podium-2 .profile-avatar,
-            .podium-3 .profile-avatar {
-                width: 50px !important;
-                height: 50px !important;
+            .podium-1 .profile-avatar {
+                width: 45px !important;
+                height: 45px !important;
                 border: 2px solid !important;
                 flex-shrink: 0;
+                margin-bottom: 0.3rem !important;
+                margin-top: 0 !important;
+                order: 1;
             }
-            
+            .podium-2 .profile-avatar{
+                width: 45px !important;
+                height: 45px !important;
+                border: 2px solid !important;
+                flex-shrink: 0;
+                margin-bottom: 0.3rem !important;
+                margin-top: 0 !important;
+                order: 1;
+            }
+            .podium-3 .profile-avatar{
+                width: 45px !important;
+                height: 45px !important;
+                border: 2px solid !important;
+                flex-shrink: 0;
+                margin-bottom: 0.3rem !important;
+                margin-top: 0 !important;
+                order: 1;
+            }
             /* Equal text sizes */
             .podium-platform h3 {
-                font-size: 0.75rem !important;
-                margin-bottom: 0.25rem !important;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                width: 100%;
-                line-height: 1.2;
+                font-size: 0.8rem !important;
+                margin-bottom: 0.4rem !important;
+                white-space: nowrap !important;
+                overflow: visible !important;
+                text-overflow: clip !important;
+                width: auto !important;
+                max-width: 100% !important;
+                line-height: 1.1;
+                order: 2;
+                font-weight: 700 !important;
+                letter-spacing: 0.5px;
+                text-align: center !important;
             }
             
             /* Show initials only on mobile */
@@ -472,13 +567,19 @@
             .podium-platform .text-3xl {
                 font-size: 1.5rem !important;
                 line-height: 1 !important;
-                margin: 0.25rem 0 !important;
+                margin: auto 0 !important;
+                order: 3;
+                font-weight: 800 !important;
             }
             
             .podium-platform .text-sm {
-                font-size: 0.625rem !important;
+                font-size: 0.58rem !important;
                 white-space: nowrap;
-                line-height: 1.2;
+                line-height: 1;
+                order: 4;
+                margin-top: 0 !important;
+                margin-bottom: auto !important;
+                opacity: 0.85;
             }
             
             /* Ensure initials container stays compact */
@@ -487,7 +588,10 @@
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                gap: 0.25rem;
+                gap: 0;
+                height: 100%;
+                justify-content: space-between;
+                min-width: 0;
             }
             
             /* Single line rankings for mobile */
@@ -499,11 +603,11 @@
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                padding: 1rem;
-                margin-bottom: 0.75rem;
+                padding: 0.75rem 0.5rem;
+                margin-bottom: 0.5rem;
                 border: 1px solid rgba(255, 255, 255, 0.1);
                 border-radius: 0.5rem;
-                gap: 0.75rem;
+                gap: 0.5rem;
             }
             
             .rankings-table tbody td {
@@ -540,9 +644,9 @@
             
             /* Smaller profile pic in rankings */
             .rankings-table tbody td img {
-                width: 40px;
-                height: 40px;
-                margin-right: 0.75rem;
+                width: 36px;
+                height: 36px;
+                margin-right: 0.5rem;
             }
             
             /* Smaller rank badge */
@@ -596,6 +700,72 @@
             .gender-badge-male i,
             .gender-badge-female i {
                 display: none;
+            }
+            
+            /* Mobile Card Styling */
+            .card.rounded-2xl {
+                padding: 1rem !important;
+                border-radius: 1rem !important;
+            }
+            
+            .card h2 {
+                font-size: 1.25rem !important;
+                margin-bottom: 1rem !important;
+            }
+            
+            /* Mobile Table Container */
+            .overflow-x-auto {
+                margin: 0 -1rem;
+                padding: 0 1rem;
+            }
+            
+            /* Improve table scrolling */
+            .rankings-table {
+                font-size: 0.75rem;
+            }
+            
+            .rankings-table tbody tr {
+                padding: 0.75rem !important;
+                margin-bottom: 0.5rem !important;
+                gap: 0.5rem !important;
+            }
+            
+            /* Mobile Modal */
+            .modal-content {
+                width: 95% !important;
+                padding: 1.5rem !important;
+                margin: 0 1rem;
+            }
+            
+            .modal-trophy {
+                font-size: 2rem !important;
+                margin-bottom: 0.75rem !important;
+            }
+            
+            .modal-name {
+                font-size: 1.25rem !important;
+                margin-bottom: 1rem !important;
+            }
+            
+            .modal-stats {
+                gap: 1.5rem !important;
+            }
+            
+            .modal-stat-value {
+                font-size: 1.25rem !important;
+            }
+            
+            .modal-stat-label {
+                font-size: 0.75rem !important;
+            }
+            
+            /* Adjust nav logo size */
+            nav img {
+                height: 2.5rem !important;
+            }
+            
+            nav .text-xl {
+                font-size: 1rem !important;
             }
         }
         
@@ -792,10 +962,6 @@
                     <span class="text-white font-bold text-xl hidden sm:inline">Promoter Rankings</span>
                 </div>
                 
-                <button class="mobile-menu-btn text-white text-2xl md:hidden" onclick="toggleMobileMenu()">
-                    <i class="fas fa-bars"></i>
-                </button>
-                
                 <div class="nav-links flex items-center gap-6">
                     <a href="user-profile.html" class="text-gray-400 hover:text-white transition">
                         <i class="fas fa-user-circle mr-2"></i><span class="hidden sm:inline">User Profile</span>
@@ -807,6 +973,10 @@
                         <i class="fas fa-sign-out-alt mr-2"></i><span class="hidden sm:inline">Logout</span>
                     </button>
                 </div>
+
+                <button class="mobile-menu-btn text-white md:hidden" onclick="toggleMobileMenu()">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
             </div>
         </div>
     </nav>

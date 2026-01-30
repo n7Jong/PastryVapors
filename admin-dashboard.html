@@ -164,13 +164,79 @@
             }
         }
         
+        .mobile-menu-btn {
+            display: none;
+        }
+        
         /* Mobile Stats Dashboard */
         @media (max-width: 768px) {
+            /* Mobile Navigation */
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .nav-links.active {
+                display: flex;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: rgba(0, 0, 0, 0.95);
+                backdrop-filter: blur(10px);
+                padding: 1rem;
+                gap: 1rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            /* Mobile Container */
+            .container {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+            
+            /* Mobile Navigation Logo */
+            nav img {
+                height: 2.5rem !important;
+            }
+            
+            nav .text-xl {
+                font-size: 1rem !important;
+            }
+            
+            /* Navbar icon spacing */
+            nav .flex.items-center.gap-3 {
+                gap: 0.5rem !important;
+            }
+            
+            nav .bg-amber-500\/20 {
+                padding: 0.25rem 0.5rem !important;
+                font-size: 0.7rem !important;
+            }
+            
+            nav button i {
+                font-size: 1.1rem !important;
+            }
+            
+            nav .container {
+                padding-left: 0.75rem !important;
+                padding-right: 0.75rem !important;
+            }
+            
+            nav .py-4 {
+                padding-top: 0.75rem !important;
+                padding-bottom: 0.75rem !important;
+            }
             .stats-grid {
                 display: grid !important;
                 grid-template-columns: 1fr 1fr !important;
                 grid-template-rows: auto auto !important;
                 gap: 0.5rem !important;
+                width: 100% !important;
             }
             
             /* Reorder cards for mobile layout */
@@ -199,18 +265,16 @@
             }
             
             .stat-card {
-                --card-width: 220px;
-                --card-height: 150px;
-                padding: 1rem !important;
-                width: var(--card-width);
-                height: var(--card-height);
-                min-height: var(--card-height);
-                max-height: var(--card-height);
+                padding: 0.75rem !important;
+                width: 100% !important;
+                height: 140px !important;
+                min-height: 140px !important;
+                max-height: 140px !important;
                 display: flex !important;
                 flex-direction: column !important;
                 justify-content: center;
                 align-items: center;
-                border-radius: 1rem !important;
+                border-radius: 0.75rem !important;
                 position: relative !important;
                 overflow: hidden !important;
             }
@@ -258,10 +322,34 @@
             .stat-card .bg-red-500\/20 i {
                 font-size: 1.25rem !important;
             }
-        }
-        
-        /* Mobile Submissions Table */
-        @media (max-width: 768px) {
+            
+            /* Mobile Filter Tabs */
+            .card.rounded-2xl {
+                padding: 0.75rem !important;
+                border-radius: 1rem !important;
+            }
+            
+            .card .flex.gap-3 {
+                gap: 0.35rem !important;
+                flex-wrap: nowrap !important;
+            }
+            
+            .filter-tab {
+                font-size: 0.7rem !important;
+                padding: 0.5rem 0.65rem !important;
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+            
+            /* Mobile Table Container */
+            .card.rounded-2xl.p-8 {
+                padding: 1rem !important;
+            }
+            
+            .card h2 {
+                font-size: 1.25rem !important;
+                margin-bottom: 1rem !important;
+            }
             .submissions-table th:nth-child(3),
             .submissions-table th:nth-child(4),
             .submissions-table th:nth-child(5),
@@ -287,6 +375,72 @@
                 padding: 0.75rem 0.5rem !important;
                 font-size: 0.875rem;
             }
+            
+            /* Mobile Table Wrapper */
+            .overflow-x-auto {
+                margin: 0 -1rem;
+                padding: 0 1rem;
+            }
+            
+            .submissions-table {
+                font-size: 0.75rem;
+            }
+            
+            .submissions-table tbody tr {
+                vertical-align: middle;
+            }
+            
+            /* Mobile Modals */
+            .modal > div {
+                width: 95% !important;
+                max-width: 95% !important;
+                margin: 0 1rem !important;
+                padding: 1.5rem !important;
+            }
+            
+            .modal h3 {
+                font-size: 1.25rem !important;
+            }
+            
+            .modal p {
+                font-size: 0.875rem !important;
+            }
+            
+            .modal button {
+                font-size: 0.875rem !important;
+                padding: 0.75rem !important;
+            }
+            
+            .modal input,
+            .modal textarea,
+            .modal select {
+                font-size: 0.875rem !important;
+            }
+            
+            /* Screenshot Modal */
+            #screenshotModal .bg-gray-900 {
+                padding: 1rem !important;
+            }
+            
+            #screenshotModal h3 {
+                font-size: 1.25rem !important;
+                margin-bottom: 1rem !important;
+            }
+            
+            #screenshotModal img {
+                height: 250px !important;
+            }
+            
+            #screenshotModal button {
+                padding: 0.75rem !important;
+            }
+            
+            /* Notifications Panel */
+            #notificationsPanel {
+                width: calc(100% - 2rem) !important;
+                max-width: 350px !important;
+                right: 1rem !important;
+            }
         }
     </style>
 </head>
@@ -310,8 +464,8 @@
                     <a href="admin-dashboard.html" class="hover:opacity-80 transition">
                         <img src="logo/Pastry Vapors 2017 Logo.png" alt="Pastry Vapors Logo" class="h-12 w-auto">
                     </a>
-                    <span class="bg-amber-500/20 text-amber-500 px-3 py-1 rounded-full text-sm font-semibold">ADMIN</span>
-                    <button id="notificationBtn" class="relative text-gray-400 hover:text-white transition">
+                    <span class="bg-amber-500/20 text-amber-500 px-3 py-1 rounded-full text-sm font-semibold">ADMIN</span>                    <button class="mobile-menu-btn text-white text-2xl ml-auto" onclick="toggleMobileMenu()">
+                    </button>                    <button id="notificationBtn" class="relative text-gray-400 hover:text-white transition">
                         <i class="fas fa-bell text-xl"></i>
                         <span id="notificationBadge" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
                     </button>

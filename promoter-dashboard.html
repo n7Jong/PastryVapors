@@ -182,13 +182,42 @@
             background-clip: text;
         }
         
+        .mobile-menu-btn {
+            display: none;
+        }
+        
         /* Mobile Stats Dashboard */
         @media (max-width: 768px) {
+            /* Mobile Navigation */
+            .nav-links {
+                display: none;
+            }
+            
+            .nav-links.active {
+                display: flex;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: rgba(0, 0, 0, 0.95);
+                backdrop-filter: blur(10px);
+                padding: 1rem;
+                gap: 1rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
             .stats-grid {
                 display: grid !important;
                 grid-template-columns: 1fr 1fr !important;
                 grid-template-rows: auto auto !important;
                 gap: 0.5rem !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                justify-content: center !important;
             }
             
             /* Reorder cards for mobile layout */
@@ -217,13 +246,11 @@
             }
             
             .stat-card {
-                --card-width: 220px;
-                --card-height: 150px;
                 padding: 1rem !important;
-                width: var(--card-width);
-                height: var(--card-height);
-                min-height: var(--card-height);
-                max-height: var(--card-height);
+                width: 100% !important;
+                height: auto !important;
+                min-height: 140px !important;
+                max-height: none !important;
                 display: flex !important;
                 flex-direction: column !important;
                 justify-content: center;
@@ -231,6 +258,7 @@
                 border-radius: 1rem !important;
                 position: relative !important;
                 overflow: hidden !important;
+                box-sizing: border-box !important;
             }
             
             .stat-card > div {
@@ -244,15 +272,16 @@
             }
             
             .stat-card .text-sm {
-                font-size: 0.7rem;
+                font-size: 0.65rem !important;
                 margin-bottom: 0.25rem !important;
                 font-weight: 600;
                 letter-spacing: 0.5px;
                 text-align: center;
+                line-height: 1.2;
             }
             
             .stat-card .text-5xl {
-                font-size: 2.75rem !important;
+                font-size: 2rem !important;
                 line-height: 1 !important;
                 margin: 0.25rem 0 !important;
                 font-weight: 800;
@@ -262,8 +291,8 @@
             .stat-card .bg-amber-500\/20,
             .stat-card .bg-green-500\/20,
             .stat-card .bg-yellow-500\/20 {
-                padding: 0.5rem !important;
-                border-radius: 0.75rem;
+                padding: 0.4rem !important;
+                border-radius: 0.5rem;
                 margin-top: 0.25rem;
                 position: relative;
                 z-index: 10;
@@ -272,7 +301,7 @@
             .stat-card .bg-amber-500\/20 i,
             .stat-card .bg-green-500\/20 i,
             .stat-card .bg-yellow-500\/20 i {
-                font-size: 1.25rem !important;
+                font-size: 1rem !important;
             }
             
             .stat-card .text-gray-500 {
@@ -300,11 +329,110 @@
             }
             
             .streak-flame i {
-                font-size: 2.75rem !important;
+                font-size: 2rem !important;
             }
             
             .stat-card .absolute.text-8xl {
                 display: none;
+            }
+            
+            /* Mobile Daily Reminder Banner */
+            #dailyReminderBanner .card {
+                padding: 1rem !important;
+            }
+            
+            #dailyReminderBanner .flex {
+                flex-direction: column !important;
+                text-align: center !important;
+            }
+            
+            #dailyReminderBanner .flex-1 {
+                width: 100%;
+            }
+            
+            #dailyReminderBanner h3 {
+                font-size: 1rem !important;
+            }
+            
+            #dailyReminderBanner p {
+                font-size: 0.875rem !important;
+            }
+            
+            #dailyReminderBanner .bg-amber-500 {
+                padding: 0.75rem !important;
+            }
+            
+            #dailyReminderBanner .bg-amber-500 i {
+                font-size: 1.5rem !important;
+            }
+            
+            /* Mobile Submit Post Section */
+            .card.rounded-2xl {
+                padding: 1rem !important;
+            }
+            
+            #submitPostSection h2 {
+                font-size: 1rem !important;
+            }
+            
+            #submitPostSection .text-gray-400 {
+                font-size: 0.75rem !important;
+            }
+            
+            .platform-btn,
+            .task-type-btn {
+                padding: 0.75rem !important;
+                font-size: 0.75rem !important;
+            }
+            
+            .platform-btn i,
+            .task-type-btn i {
+                font-size: 1rem !important;
+            }
+            
+            /* Mobile Submission History */
+            .overflow-x-auto {
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            table {
+                min-width: 600px;
+                font-size: 0.75rem;
+            }
+            
+            table th,
+            table td {
+                padding: 0.75rem 0.5rem !important;
+                white-space: nowrap;
+            }
+            
+            table th {
+                font-size: 0.7rem !important;
+            }
+            
+            table .bg-blue-600\/20,
+            table .bg-pink-600\/20 {
+                padding: 0.25rem 0.5rem !important;
+                font-size: 0.65rem !important;
+            }
+            
+            /* Mobile Disabled Overlay */
+            #submitDisabledOverlay .text-center {
+                padding: 1rem !important;
+            }
+            
+            #submitDisabledOverlay i {
+                font-size: 3rem !important;
+                margin-bottom: 1rem !important;
+            }
+            
+            #submitDisabledOverlay h3 {
+                font-size: 1.25rem !important;
+            }
+            
+            #submitDisabledOverlay p {
+                font-size: 0.875rem !important;
             }
         }
     </style>
