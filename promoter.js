@@ -20,6 +20,7 @@ onAuthStateChanged(auth, async (user) => {
     }
     currentUser = user;
     if (!isDemoMode) {
+        await ensureUserDocument(); // Ensure user document exists with all fields
         await checkUserStatus();
         loadPromoterData();
         loadAnnouncements();
@@ -316,26 +317,102 @@ function hideLoadingOverlay() {
     }
 }
 
+// Ensure user document exists with all required fields
+async function ensureUserDocument() {
+    try {
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        const userDoc = await getDoc(userDocRef);
+        
+        if (!userDoc.exists()) {
+            console.log('⚠ User document does not exist, creating...');
+            
+            // Create basic user document
+            await updateDoc(userDocRef, {
+                email: currentUser.email || '',
+                isAdmin: false,
+                createdAt: Timestamp.now(),
+                createdBy: 'auto_created',
+                firstName: '',
+                middleName: '',
+                lastName: '',
+                fullName: currentUser.displayName || '',
+                birthdate: '',
+                address: '',
+                contactNumber: '',
+                gender: '',
+                primaryFbLink: '',
+                promoterFbLink: '',
+                profilePicture: '',
+                points: 0,
+                totalApprovedPosts: 0
+            }, { merge: true });
+            
+            console.log('✓ User document created');
+        } else {
+            // Document exists, but ensure all required fields are present
+            const userData = userDoc.data();
+            const updates = {};
+            let needsUpdate = false;
+            
+            // Check for missing fields and add defaults
+            const requiredFields = {
+                email: currentUser.email || '',
+                firstName: '',
+                middleName: '',
+                lastName: '',
+                fullName: currentUser.displayName || userData.fullName || '',
+                birthdate: '',
+                address: '',
+                contactNumber: '',
+                gender: '',
+                primaryFbLink: '',
+                promoterFbLink: '',
+                profilePicture: '',
+                points: 0,
+                totalApprovedPosts: 0,
+                isAdmin: false
+            };
+            
+            for (const [field, defaultValue] of Object.entries(requiredFields)) {
+                if (userData[field] === undefined || userData[field] === null) {
+                    updates[field] = defaultValue;
+                    needsUpdate = true;
+                }
+            }
+            
+            if (needsUpdate) {
+                console.log('⚠ Adding missing fields to user document:', Object.keys(updates));
+                await updateDoc(userDocRef, updates);
+                console.log('✓ User document updated with missing fields');
+            }
+        }
+    } catch (error) {
+        console.error('Error ensuring user document:', error);
+    }
+}
+
 // Check user suspension status
 // Check if user profile is complete
 function isProfileComplete(userData) {
-    if (!userData) return false;
+    if (!userData) return { complete: false, missing: ['all user data'] };
     
     const requiredFields = [
-        'firstName',
-        'lastName',
-        'email',
-        'birthdate',
-        'address',
-        'contactNumber',
-        'gender',
-        'primaryFbLink',
-        'profilePicture'
+        { key: 'firstName', label: 'First Name' },
+        { key: 'lastName', label: 'Last Name' },
+        { key: 'email', label: 'Email' },
+        { key: 'birthdate', label: 'Birthdate' },
+        { key: 'address', label: 'Address' },
+        { key: 'contactNumber', label: 'Contact Number' },
+        { key: 'gender', label: 'Gender' },
+        { key: 'primaryFbLink', label: 'Primary Facebook Link' },
+        { key: 'profilePicture', label: 'Profile Picture' }
     ];
     
+    const missingFields = [];
+    
     for (const field of requiredFields) {
-        if (!userData[field] || userData[field].trim() === '') {
-            return false;
+        if (!userData[field.key] || userData[field.key].trim() === '') {
+            missingFields.push(field.label);
         }
     }
     
@@ -343,10 +420,13 @@ function isProfileComplete(userData) {
     if (userData.profilePicture && 
         (userData.profilePicture.includes('placeholder') || 
          userData.profilePicture.includes('ui-avatars.com'))) {
-        return false;
+        missingFields.push('Valid Profile Picture (current is placeholder)');
     }
     
-    return true;
+    return { 
+        complete: missingFields.length === 0, 
+        missing: missingFields 
+    };
 }
 
 async function checkUserStatus() {
@@ -378,6 +458,8 @@ async function checkUserStatus() {
             if (currentUserData.warnings && currentUserData.warnings > 0) {
                 showWarningNotice(currentUserData.warnings, currentUserData.lastWarning);
             }
+            
+            // Profile incomplete notice removed - validation happens on submit only
         }
         return false;
     } catch (error) {
@@ -416,23 +498,86 @@ function showWarningNotice(warningCount, lastWarning) {
         
         const warningBanner = document.createElement('div');
         warningBanner.id = `warning-${warningId}`;
-        warningBanner.className = 'col-span-full bg-yellow-500/20 border border-yellow-500 rounded-lg p-4 mb-4';
+        warningBanner.className = 'col-span-full bg-gradient-to-r from-yellow-900/40 to-yellow-800/20 border-l-4 border-yellow-500 rounded p-2 sm:p-3 mb-2 sm:mb-4 relative';
         warningBanner.innerHTML = `
-            <div class="flex items-start gap-3">
-                <i class="fas fa-exclamation-triangle text-yellow-500 text-2xl"></i>
-                <div class="flex-1">
-                    <h3 class="text-yellow-500 font-bold mb-1">Warning Notice (${warningCount} total)</h3>
-                    <p class="text-white">${lastWarning.message}</p>
-                    <p class="text-gray-400 text-sm mt-2">${new Date(lastWarning.timestamp).toLocaleString()}</p>
+            <div class="flex items-start gap-2 sm:gap-3">
+                <i class="fas fa-exclamation-triangle text-yellow-500 text-sm sm:text-xl flex-shrink-0"></i>
+                <div class="flex-1 min-w-0 pr-6 sm:pr-0">
+                    <h3 class="text-yellow-500 font-bold mb-0.5 text-xs sm:text-sm">Warning (${warningCount})</h3>
+                    <p class="text-white/90 text-xs sm:text-sm leading-snug">${lastWarning.message}</p>
+                    <p class="text-gray-400 text-xs mt-0.5 sm:mt-1">${new Date(lastWarning.timestamp).toLocaleString()}</p>
                 </div>
-                <button onclick="minimizeWarning('${warningId}')" class="text-white/50 hover:text-white transition-colors ml-2">
-                    <i class="fas fa-times text-xl"></i>
+                <button onclick="minimizeWarning('${warningId}')" class="text-white/50 hover:text-white transition p-1 absolute top-1 right-1">
+                    <i class="fas fa-times text-sm"></i>
                 </button>
             </div>
         `;
         statsCards.insertBefore(warningBanner, statsCards.firstChild);
     }
 }
+
+// Show profile incomplete notice
+function showProfileIncompleteNotice(missingFields) {
+    const statsCards = document.querySelector('.grid');
+    if (statsCards && missingFields.length > 0) {
+        // Check if already minimized
+        const isMinimized = localStorage.getItem('profileIncompleteMinimized') === 'true';
+        
+        if (isMinimized) {
+            return; // Don't show if minimized
+        }
+        
+        // Remove existing notice if any
+        const existingNotice = document.getElementById('profile-incomplete-notice');
+        if (existingNotice) {
+            existingNotice.remove();
+        }
+        
+        const missingList = missingFields.map(f => `<li class="text-white/90 text-xs">• ${f}</li>`).join('');
+        
+        const profileBanner = document.createElement('div');
+        profileBanner.id = 'profile-incomplete-notice';
+        profileBanner.className = 'col-span-full bg-gradient-to-r from-red-900/50 to-red-800/30 border-l-4 border-red-500 rounded p-2 sm:p-4 mb-2 sm:mb-4 relative';
+        profileBanner.innerHTML = `
+            <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2 flex-1 min-w-0">
+                    <i class="fas fa-exclamation-triangle text-red-500 text-sm sm:text-xl flex-shrink-0"></i>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-white font-bold text-xs sm:text-sm leading-tight mb-0.5">Profile Incomplete</p>
+                        <p class="text-white/70 text-xs hidden sm:block">Missing: ${missingFields.join(', ')}</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                    <a href="user-profile.html" class="bg-red-500 hover:bg-red-600 text-white font-bold px-2.5 py-1 sm:px-4 sm:py-1.5 rounded text-xs whitespace-nowrap transition">
+                        <i class="fas fa-edit mr-1"></i><span class="hidden sm:inline">Fix</span><span class="sm:hidden">Fix</span>
+                    </a>
+                    <button onclick="minimizeProfileNotice()" class="text-white/50 hover:text-white transition p-1">
+                        <i class="fas fa-times text-sm"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="mt-1.5 sm:hidden">
+                <ul class="text-xs text-white/80 space-y-0.5">${missingList}</ul>
+            </div>
+        `;
+        statsCards.insertBefore(profileBanner, statsCards.firstChild);
+    }
+}
+
+// Minimize profile incomplete notice
+window.minimizeProfileNotice = function() {
+    localStorage.setItem('profileIncompleteMinimized', 'true');
+    
+    const element = document.getElementById('profile-incomplete-notice');
+    if (element) {
+        element.style.transition = 'opacity 0.3s, transform 0.3s';
+        element.style.opacity = '0';
+        element.style.transform = 'translateY(-20px)';
+        setTimeout(() => {
+            element.remove();
+        }, 300);
+    }
+};
 
 // Minimize warning
 window.minimizeWarning = function(warningId) {
@@ -483,8 +628,10 @@ if (submitPostForm) {
         }
         
         // Check if profile is complete
-        if (!isProfileComplete(currentUserData)) {
-            alert('Please complete your profile before submitting tasks. Go to your User Profile and fill in all required fields including profile picture.');
+        const profileCheck = isProfileComplete(currentUserData);
+        if (!profileCheck.complete) {
+            const missingList = profileCheck.missing.join('\n• ');
+            alert(`❌ Incomplete Profile\n\nPlease complete your profile before submitting tasks.\n\nMissing fields:\n• ${missingList}\n\n➡️ Go to User Profile to update these fields.`);
             return;
         }
         
@@ -701,6 +848,42 @@ function updateStats(posts) {
     document.getElementById('totalPoints').textContent = totalPoints;
     document.getElementById('approvedPosts').textContent = approved.length;
     document.getElementById('pendingPosts').textContent = pending.length;
+    
+    // Update account status display
+    updateAccountStatusDisplay();
+}
+
+// Update account status display
+function updateAccountStatusDisplay() {
+    // Check if status indicator already exists
+    let statusIndicator = document.getElementById('accountStatusIndicator');
+    
+    if (!statusIndicator) {
+        // Create and insert status indicator in the navbar
+        const userProfileLink = document.querySelector('a[href=\"user-profile.html\"]');
+        if (userProfileLink) {
+            statusIndicator = document.createElement('span');
+            statusIndicator.id = 'accountStatusIndicator';
+            statusIndicator.className = 'inline-block ml-2';
+            userProfileLink.appendChild(statusIndicator);
+        } else {
+            return; // Can't find where to put it
+        }
+    }
+    
+    // Determine status
+    if (currentUserData) {
+        if (currentUserData.suspended) {
+            statusIndicator.innerHTML = '<span class="bg-red-500/90 text-white text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded font-bold tracking-tight">⛔</span>';
+        } else {
+            const profileCheck = isProfileComplete(currentUserData);
+            if (!profileCheck.complete) {
+                statusIndicator.innerHTML = '<span class="bg-orange-500/90 text-white text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded font-bold tracking-tight">⚠</span>';
+            } else {
+                statusIndicator.innerHTML = '<span class="bg-green-500/90 text-white text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded font-bold tracking-tight">✓</span>';
+            }
+        }
+    }
 }
 
 // Update history table
@@ -1011,9 +1194,6 @@ function updateStreakDisplay(days) {
 function showDailyReminder() {
     if (!currentUserData) return;
     
-    const dayOfWeek = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
-    const userGender = currentUserData.gender;
-    
     const reminderBanner = document.getElementById('dailyReminderBanner');
     const reminderTitle = document.getElementById('reminderTitle');
     const reminderMessage = document.getElementById('reminderMessage');
@@ -1022,6 +1202,31 @@ function showDailyReminder() {
     const disabledTitle = document.getElementById('disabledTitle');
     const disabledMessage = document.getElementById('disabledMessage');
     const yourSchedule = document.getElementById('yourSchedule');
+    
+    // Check if profile is complete first
+    const profileCheck = isProfileComplete(currentUserData);
+    if (!profileCheck.complete) {
+        // Show profile incomplete message
+        if (reminderBanner) {
+            reminderBanner.classList.remove('hidden');
+            if (reminderTitle) reminderTitle.textContent = '⚠️ Profile Incomplete';
+            if (reminderMessage) reminderMessage.textContent = 'Complete your profile to start submitting posts and earning points!';
+            if (reminderIcon) reminderIcon.textContent = '👤';
+        }
+        
+        // Disable submit form
+        if (submitDisabledOverlay && disabledTitle && disabledMessage && yourSchedule) {
+            submitDisabledOverlay.classList.remove('hidden');
+            submitDisabledOverlay.classList.add('flex');
+            if (disabledTitle) disabledTitle.textContent = 'Complete Your Profile First';
+            if (disabledMessage) disabledMessage.textContent = 'You must complete your profile before you can submit posts.';
+            if (yourSchedule) yourSchedule.textContent = `Missing: ${profileCheck.missing.join(', ')}`;
+        }
+        return;
+    }
+    
+    const dayOfWeek = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const userGender = currentUserData.gender;
     
     // Monday = 1, Tuesday = 2, Wednesday = 3, Thursday = 4, Friday = 5, Saturday = 6, Sunday = 0
     const queensDays = [1, 3, 5]; // Monday, Wednesday, Friday
