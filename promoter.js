@@ -411,16 +411,23 @@ function isProfileComplete(userData) {
     const missingFields = [];
     
     for (const field of requiredFields) {
-        if (!userData[field.key] || userData[field.key].trim() === '') {
+        const value = userData[field.key];
+        // Check if field is missing, null, undefined, or empty after trimming
+        if (!value || (typeof value === 'string' && value.trim() === '')) {
             missingFields.push(field.label);
         }
     }
     
-    // Check if profile picture is not a placeholder
-    if (userData.profilePicture && 
-        (userData.profilePicture.includes('placeholder') || 
-         userData.profilePicture.includes('ui-avatars.com'))) {
-        missingFields.push('Valid Profile Picture (current is placeholder)');
+    // Check if profile picture is missing or is a placeholder
+    // Only flag as missing if it's truly missing or explicitly a placeholder
+    if (!userData.profilePicture || 
+        userData.profilePicture.trim() === '' ||
+        userData.profilePicture.includes('ui-avatars.com')) {
+        // Remove "Profile Picture" from missing fields if already added, and add specific message
+        const ppIndex = missingFields.indexOf('Profile Picture');
+        if (ppIndex === -1) {
+            missingFields.push('Profile Picture');
+        }
     }
     
     return { 
