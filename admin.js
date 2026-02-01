@@ -401,6 +401,65 @@ document.getElementById('nextScreenshot')?.addEventListener('click', () => {
     }
 });
 
+// Screenshot Zoom Lightbox Functions
+window.openScreenshotZoom = function() {
+    const zoomLightbox = document.getElementById('screenshotZoomLightbox');
+    const zoomedImg = document.getElementById('zoomedScreenshot');
+    const zoomedCounter = document.getElementById('zoomedCounter');
+    
+    if (zoomLightbox && zoomedImg && currentScreenshots.length > 0) {
+        zoomedImg.src = currentScreenshots[currentScreenshotIndex];
+        zoomedCounter.textContent = `${currentScreenshotIndex + 1} / ${currentScreenshots.length}`;
+        zoomLightbox.classList.remove('hidden');
+    }
+};
+
+window.closeScreenshotZoom = function() {
+    const zoomLightbox = document.getElementById('screenshotZoomLightbox');
+    if (zoomLightbox) {
+        zoomLightbox.classList.add('hidden');
+    }
+};
+
+window.navigateZoomedScreenshot = function(direction) {
+    currentScreenshotIndex += direction;
+    
+    // Loop around
+    if (currentScreenshotIndex < 0) {
+        currentScreenshotIndex = currentScreenshots.length - 1;
+    } else if (currentScreenshotIndex >= currentScreenshots.length) {
+        currentScreenshotIndex = 0;
+    }
+    
+    // Update both the zoom view and the background modal
+    const zoomedImg = document.getElementById('zoomedScreenshot');
+    const zoomedCounter = document.getElementById('zoomedCounter');
+    
+    if (zoomedImg) {
+        zoomedImg.src = currentScreenshots[currentScreenshotIndex];
+    }
+    if (zoomedCounter) {
+        zoomedCounter.textContent = `${currentScreenshotIndex + 1} / ${currentScreenshots.length}`;
+    }
+    
+    // Also update the background screenshot viewer
+    updateScreenshotDisplay();
+};
+
+// Keyboard navigation for zoomed screenshot
+document.addEventListener('keydown', (e) => {
+    const zoomLightbox = document.getElementById('screenshotZoomLightbox');
+    if (zoomLightbox && !zoomLightbox.classList.contains('hidden')) {
+        if (e.key === 'Escape') {
+            closeScreenshotZoom();
+        } else if (e.key === 'ArrowLeft') {
+            navigateZoomedScreenshot(-1);
+        } else if (e.key === 'ArrowRight') {
+            navigateZoomedScreenshot(1);
+        }
+    }
+});
+
 // Submission Details Modal
 function showSubmissionDetailsModal(postId) {
     const post = allPosts.find(p => p.id === postId);

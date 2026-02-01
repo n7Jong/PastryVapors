@@ -270,7 +270,7 @@ function updateStats() {
 }
 
 // View Promoter Details
-window.viewPromoterDetails = (userId) => {
+window.viewPromoterDetails = async (userId) => {
     const promoter = allPromoters.find(p => p.id === userId);
     if (!promoter) return;
     
@@ -285,6 +285,74 @@ window.viewPromoterDetails = (userId) => {
     const genderIcon = promoter.gender === 'male' ? '<i class="fas fa-mars text-blue-500"></i>' :
                        promoter.gender === 'female' ? '<i class="fas fa-venus text-pink-500"></i>' : '';
     const genderText = promoter.gender === 'male' ? 'Male' : promoter.gender === 'female' ? 'Female' : 'Not specified';
+    
+    // Fetch promoter's posts/tasks
+    let postsHTML = '';
+    try {
+        const postsRef = collection(db, 'posts');
+        const postsQuery = query(postsRef, where('userId', '==', userId));
+        const postsSnapshot = await getDocs(postsQuery);
+        
+        if (postsSnapshot.empty) {
+            postsHTML = `
+                <div class="no-screenshots">
+                    <i class="fas fa-images"></i>
+                    <p class="text-lg">No submitted tasks yet</p>
+                </div>
+            `;
+        } else {
+            const posts = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const screenshots = [];
+            
+            posts.forEach(post => {
+                if (post.imageUrl) {
+                    screenshots.push({
+                        url: post.imageUrl,
+                        description: post.description || 'No description',
+                        timestamp: post.timestamp || post.createdAt || 'Unknown date',
+                        postId: post.id
+                    });
+                }
+            });
+            
+            if (screenshots.length === 0) {
+                postsHTML = `
+                    <div class="no-screenshots">
+                        <i class="fas fa-images"></i>
+                        <p class="text-lg">No screenshots in submitted tasks</p>
+                    </div>
+                `;
+            } else {
+                postsHTML = `
+                    <div class="screenshot-grid">
+                        ${screenshots.map((screenshot, index) => `
+                            <div class="screenshot-item" onclick="openLightbox(${index}, '${userId}')">
+                                <img src="${screenshot.url}" alt="Task screenshot" loading="lazy">
+                                <div class="screenshot-overlay">
+                                    <i class="fas fa-search-plus text-white text-2xl"></i>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <p class="text-gray-400 text-sm mt-3">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Click on any screenshot to view in full size
+                    </p>
+                `;
+                
+                // Store screenshots data for lightbox
+                window.currentScreenshots = screenshots;
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching posts:', error);
+        postsHTML = `
+            <div class="no-screenshots">
+                <i class="fas fa-exclamation-triangle text-red-500"></i>
+                <p class="text-lg">Error loading screenshots</p>
+            </div>
+        `;
+    }
     
     const modalHTML = `
         <div id="viewPromoterModal" class="modal active">
@@ -395,6 +463,14 @@ window.viewPromoterDetails = (userId) => {
                                 </span>
                             </p>
                         </div>
+                    </div>
+                    
+                    <!-- Submitted Tasks Screenshots -->
+                    <div class="bg-gray-900 rounded-lg p-6">
+                        <h4 class="text-amber-500 font-semibold mb-4 flex items-center gap-2">
+                            <i class="fas fa-images"></i> Submitted Tasks Screenshots
+                        </h4>
+                        ${postsHTML}
                     </div>
                 </div>
             </div>
@@ -591,5 +667,128 @@ window.closeAllMenus = () => {
 document.addEventListener('click', (e) => {
     if (!e.target.closest('.actions-menu')) {
         closeAllMenus();
+    }
+});
+
+// Lightbox functionality for screenshots
+let currentLightboxIndex = 0;
+window.currentScreenshots = [];
+
+window.openLightbox = (index, userId) => {
+    currentLightboxIndex = index;
+    
+    // Create lightbox if it doesn't exist
+    if (!document.getElementById('screenshotLightbox')) {
+        const lightboxHTML = `
+            <div id="screenshotLightbox" class="lightbox">
+                <div class="lightbox-content">
+                    <button class="lightbox-close" onclick="closeLightbox()">
+                        <i class="fas fa-times"></i> Close
+                    </button>
+                    <button class="lightbox-nav lightbox-prev" onclick="navigateLightbox(-1)">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <img id="lightboxImage" class="lightbox-image" src="" alt="Screenshot">
+                    <button class="lightbox-nav lightbox-next" onclick="navigateLightbox(1)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <div class="lightbox-info">
+                        <p id="lightboxDescription" class="font-semibold mb-1"></p>
+                        <p id="lightboxTimestamp" class="text-sm text-gray-400"></p>
+                        <p id="lightboxCounter" class="text-sm text-amber-500 mt-2"></p>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', lightboxHTML);
+    }
+    
+    // Show the image AFTER creating the lightbox
+    showLightboxImage();
+    
+    // Then make it visible
+    document.getElementById('screenshotLightbox').classList.add('active');
+};
+
+window.closeLightbox = () => {
+    const lightbox = document.getElementById('screenshotLightbox');
+    if (lightbox) {
+        lightbox.classList.remove('active');
+    }
+};
+
+window.navigateLightbox = (direction) => {
+    currentLightboxIndex += direction;
+    
+    // Loop around
+    if (currentLightboxIndex < 0) {
+        currentLightboxIndex = window.currentScreenshots.length - 1;
+    } else if (currentLightboxIndex >= window.currentScreenshots.length) {
+        currentLightboxIndex = 0;
+    }
+    
+    showLightboxImage();
+};
+
+function showLightboxImage() {
+    if (!window.currentScreenshots || window.currentScreenshots.length === 0) return;
+    
+    const screenshot = window.currentScreenshots[currentLightboxIndex];
+    const lightboxImage = document.getElementById('lightboxImage');
+    const lightboxDescription = document.getElementById('lightboxDescription');
+    const lightboxTimestamp = document.getElementById('lightboxTimestamp');
+    const lightboxCounter = document.getElementById('lightboxCounter');
+    
+    if (lightboxImage) lightboxImage.src = screenshot.url;
+    if (lightboxDescription) lightboxDescription.textContent = screenshot.description;
+    if (lightboxTimestamp) {
+        const timestamp = screenshot.timestamp;
+        let dateStr = 'Unknown date';
+        
+        if (timestamp) {
+            try {
+                const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+                dateStr = date.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (e) {
+                console.error('Error parsing date:', e);
+            }
+        }
+        
+        lightboxTimestamp.textContent = dateStr;
+    }
+    if (lightboxCounter) {
+        lightboxCounter.textContent = `Screenshot ${currentLightboxIndex + 1} of ${window.currentScreenshots.length}`;
+    }
+    
+    // Show/hide navigation buttons
+    const prevBtn = document.querySelector('.lightbox-prev');
+    const nextBtn = document.querySelector('.lightbox-next');
+    
+    if (window.currentScreenshots.length <= 1) {
+        if (prevBtn) prevBtn.style.display = 'none';
+        if (nextBtn) nextBtn.style.display = 'none';
+    } else {
+        if (prevBtn) prevBtn.style.display = 'block';
+        if (nextBtn) nextBtn.style.display = 'block';
+    }
+}
+
+// Keyboard navigation for lightbox
+document.addEventListener('keydown', (e) => {
+    const lightbox = document.getElementById('screenshotLightbox');
+    if (lightbox && lightbox.classList.contains('active')) {
+        if (e.key === 'Escape') {
+            closeLightbox();
+        } else if (e.key === 'ArrowLeft') {
+            navigateLightbox(-1);
+        } else if (e.key === 'ArrowRight') {
+            navigateLightbox(1);
+        }
     }
 });

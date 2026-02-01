@@ -774,7 +774,7 @@
             </div>
             
             <div class="relative">
-                <img id="currentScreenshot" src="" alt="Screenshot" class="w-full h-96 object-contain bg-black rounded-lg">
+                <img id="currentScreenshot" src="" alt="Screenshot" class="w-full h-96 object-contain bg-black rounded-lg cursor-zoom-in" onclick="openScreenshotZoom()">
                 
                 <!-- Navigation Buttons -->
                 <button id="prevScreenshot" class="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-4 rounded-full">
@@ -784,6 +784,11 @@
                     <i class="fas fa-chevron-right"></i>
                 </button>
                 
+                <!-- Zoom Hint -->
+                <div class="absolute top-4 right-4 bg-black/70 px-3 py-2 rounded-lg text-white text-sm">
+                    <i class="fas fa-search-plus mr-2"></i>Click to zoom
+                </div>
+                
                 <!-- Counter -->
                 <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 px-4 py-2 rounded-full text-white">
                     <span id="screenshotCounter">1 / 1</span>
@@ -792,6 +797,31 @@
             
             <!-- Thumbnail Strip -->
             <div id="thumbnailStrip" class="flex gap-2 mt-4 overflow-x-auto pb-2"></div>
+        </div>
+    </div>
+
+    <!-- Screenshot Zoom Lightbox -->
+    <div id="screenshotZoomLightbox" class="hidden fixed inset-0 bg-black/95 z-[60] flex items-center justify-center p-5">
+        <div class="relative max-w-full max-h-full">
+            <button onclick="closeScreenshotZoom()" class="absolute -top-12 right-0 bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-semibold transition">
+                <i class="fas fa-times mr-2"></i>Close
+            </button>
+            
+            <button onclick="navigateZoomedScreenshot(-1)" class="absolute left-5 top-1/2 -translate-y-1/2 bg-amber-500/80 hover:bg-amber-500 text-black p-4 rounded-full transition">
+                <i class="fas fa-chevron-left text-xl"></i>
+            </button>
+            
+            <img id="zoomedScreenshot" src="" alt="Zoomed Screenshot" class="max-w-full max-h-[90vh] object-contain rounded-lg">
+            
+            <button onclick="navigateZoomedScreenshot(1)" class="absolute right-5 top-1/2 -translate-y-1/2 bg-amber-500/80 hover:bg-amber-500 text-black p-4 rounded-full transition">
+                <i class="fas fa-chevron-right text-xl"></i>
+            </button>
+            
+            <div class="absolute -bottom-14 left-0 right-0 text-center">
+                <div class="inline-block bg-black/80 px-6 py-3 rounded-lg text-white">
+                    <p id="zoomedCounter" class="font-semibold text-amber-500">1 / 1</p>
+                </div>
+            </div>
         </div>
     </div>
 
