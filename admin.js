@@ -1334,3 +1334,220 @@ document.getElementById('toggleSignupBtn')?.addEventListener('click', async () =
         alert('Failed to toggle signup: ' + error.message);
     }
 });
+
+// Track Inactive Queens/Kings
+let selectedInactivePromoters = [];
+
+document.getElementById('trackInactiveBtn')?.addEventListener('click', async () => {
+    try {
+        console.log('🔍 Checking for inactive Queens and Kings...');
+        
+        // Get all users with Queen or King rank
+        const usersQuery = query(collection(db, 'users'));
+        const usersSnapshot = await getDocs(usersQuery);
+        
+        const royals = [];
+        usersSnapshot.forEach((doc) => {
+            const userData = doc.data();
+            if (userData.rank === 'Queen' || userData.rank === 'King') {
+                royals.push({ id: doc.id, ...userData });
+            }
+        });
+        
+        console.log('👑 Total Queens/Kings:', royals.length);
+        
+        // Get today's date range (midnight to midnight)
+        const now = new Date();
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+        const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+        
+        console.log('📅 Checking submissions from:', todayStart, 'to:', todayEnd);
+        
+        // Get today's posts
+        const postsQuery = query(
+            collection(db, 'posts'),
+            where('createdAt', '>=', Timestamp.fromDate(todayStart)),
+            where('createdAt', '<=', Timestamp.fromDate(todayEnd))
+        );
+        const postsSnapshot = await getDocs(postsQuery);
+        
+        // Get list of user IDs who submitted today
+        const activeUserIds = new Set();
+        postsSnapshot.forEach((doc) => {
+            const postData = doc.data();
+            activeUserIds.add(postData.userId);
+        });
+        
+        console.log('✅ Active users today:', activeUserIds.size);
+        
+        // Find inactive royals
+        const inactiveRoyals = royals.filter(royal => !activeUserIds.has(royal.id));
+        
+        console.log('⚠️ Inactive Queens/Kings:', inactiveRoyals.length);
+        
+        // Display results
+        displayInactiveRoyals(inactiveRoyals);
+        
+    } catch (error) {
+        console.error('Error tracking inactive royals:', error);
+        alert('Failed to track inactive Queens/Kings: ' + error.message);
+    }
+});
+
+function displayInactiveRoyals(inactiveRoyals) {
+    const modal = document.getElementById('inactiveRoyalsModal');
+    const listContainer = document.getElementById('inactiveRoyalsList');
+    const noInactiveMessage = document.getElementById('noInactiveRoyals');
+    
+    selectedInactivePromoters = [];
+    
+    if (inactiveRoyals.length === 0) {
+        listContainer.classList.add('hidden');
+        noInactiveMessage.classList.remove('hidden');
+    } else {
+        listContainer.classList.remove('hidden');
+        noInactiveMessage.classList.add('hidden');
+        
+        listContainer.innerHTML = inactiveRoyals.map(royal => `
+            <div class="card rounded-lg p-4 flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <input 
+                        type="checkbox" 
+                        class="inactive-checkbox w-5 h-5 rounded border-gray-600 bg-black/30 text-amber-500 focus:ring-amber-500"
+                        data-user-id="${royal.id}"
+                        data-user-name="${royal.firstName} ${royal.lastName}"
+                    >
+                    <div>
+                        <p class="text-white font-semibold flex items-center gap-2">
+                            ${royal.firstName} ${royal.lastName}
+                            <span class="text-xs ${royal.rank === 'Queen' ? 'text-pink-400' : 'text-blue-400'}">
+                                <i class="fas fa-crown mr-1"></i>${royal.rank}
+                            </span>
+                        </p>
+                        <p class="text-gray-400 text-sm">${royal.email}</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-gray-400 text-sm">Points: <span class="text-amber-500 font-semibold">${royal.points || 0}</span></p>
+                </div>
+            </div>
+        `).join('');
+        
+        // Add event listeners to checkboxes
+        document.querySelectorAll('.inactive-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', updateSelectedInactive);
+        });
+    }
+    
+    modal.classList.remove('hidden');
+    modal.classList.add('active');
+}
+
+function updateSelectedInactive() {
+    selectedInactivePromoters = [];
+    document.querySelectorAll('.inactive-checkbox:checked').forEach(checkbox => {
+        selectedInactivePromoters.push({
+            id: checkbox.dataset.userId,
+            name: checkbox.dataset.userName
+        });
+    });
+    console.log('Selected promoters:', selectedInactivePromoters.length);
+}
+
+// Close inactive royals modal
+document.getElementById('closeInactiveRoyalsBtn')?.addEventListener('click', () => {
+    document.getElementById('inactiveRoyalsModal').classList.add('hidden');
+    document.getElementById('inactiveRoyalsModal').classList.remove('active');
+    selectedInactivePromoters = [];
+});
+
+// Select all inactive
+document.getElementById('selectAllInactiveBtn')?.addEventListener('click', () => {
+    document.querySelectorAll('.inactive-checkbox').forEach(checkbox => {
+        checkbox.checked = true;
+    });
+    updateSelectedInactive();
+});
+
+// Deselect all inactive
+document.getElementById('deselectAllInactiveBtn')?.addEventListener('click', () => {
+    document.querySelectorAll('.inactive-checkbox').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    updateSelectedInactive();
+});
+
+// Warn selected inactive promoters
+document.getElementById('warnSelectedBtn')?.addEventListener('click', () => {
+    if (selectedInactivePromoters.length === 0) {
+        alert('Please select at least one promoter to warn.');
+        return;
+    }
+    
+    document.getElementById('bulkWarningCount').textContent = selectedInactivePromoters.length;
+    document.getElementById('bulkWarningModal').classList.remove('hidden');
+    document.getElementById('bulkWarningModal').classList.add('active');
+});
+
+// Cancel bulk warning
+document.getElementById('cancelBulkWarningBtn')?.addEventListener('click', () => {
+    document.getElementById('bulkWarningModal').classList.add('hidden');
+    document.getElementById('bulkWarningModal').classList.remove('active');
+    document.getElementById('bulkWarningMessage').value = '';
+});
+
+// Confirm bulk warning
+document.getElementById('confirmBulkWarningBtn')?.addEventListener('click', async () => {
+    const message = document.getElementById('bulkWarningMessage').value.trim();
+    
+    if (!message) {
+        alert('Please enter a warning message.');
+        return;
+    }
+    
+    try {
+        console.log('📨 Sending warnings to', selectedInactivePromoters.length, 'promoters...');
+        
+        const warningPromises = selectedInactivePromoters.map(async (promoter) => {
+            // Add notification for the promoter
+            await addDoc(collection(db, 'notifications'), {
+                userId: promoter.id,
+                type: 'warning',
+                title: 'Inactivity Warning',
+                message: message,
+                createdAt: Timestamp.now(),
+                read: false,
+                priority: 'high'
+            });
+            
+            // Update user's warning count
+            const userRef = doc(db, 'users', promoter.id);
+            const userDoc = await getDoc(userRef);
+            if (userDoc.exists()) {
+                const currentWarnings = userDoc.data().warnings || 0;
+                await updateDoc(userRef, {
+                    warnings: currentWarnings + 1,
+                    lastWarning: Timestamp.now()
+                });
+            }
+        });
+        
+        await Promise.all(warningPromises);
+        
+        alert(`Warning sent to ${selectedInactivePromoters.length} promoter(s) successfully!`);
+        
+        // Close modals
+        document.getElementById('bulkWarningModal').classList.add('hidden');
+        document.getElementById('bulkWarningModal').classList.remove('active');
+        document.getElementById('inactiveRoyalsModal').classList.add('hidden');
+        document.getElementById('inactiveRoyalsModal').classList.remove('active');
+        
+        // Reset
+        document.getElementById('bulkWarningMessage').value = '';
+        selectedInactivePromoters = [];
+        
+    } catch (error) {
+        console.error('Error sending bulk warnings:', error);
+        alert('Failed to send warnings: ' + error.message);
+    }
+});
